@@ -4,7 +4,7 @@ A small PWA built with React and Vite that shows a random Bible verse (KJV) cent
 
 ## Run locally
 
-- **Node:** Use Node 20.19+ or 22.12+ (required by Vite 7).
+- **Node:** Use Node 18+ (project uses Vite 5).
 - Install and start:
 
 ```bash
@@ -22,6 +22,16 @@ npm run preview
 ```
 
 The service worker is only registered in production, so the app can be installed and used offline after the first load.
+
+## Deploy to GitHub Pages
+
+1. In your GitHub repo go to **Settings → Pages**.
+2. Under **Build and deployment**, set **Source** to **GitHub Actions**.
+3. Push the `main` branch (or your default branch). The workflow builds and deploys automatically.
+
+The site will be at `https://<your-username>.github.io/random-bible-verse/`.
+
+If your default branch is not `main`, edit `.github/workflows/deploy.yml` and change `branches: [main]` to your branch (e.g. `master`).
 
 ## Features
 
