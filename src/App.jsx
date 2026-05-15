@@ -7,8 +7,8 @@ import './App.css'
 
 const WORD_SPLIT = /\s+/
 
-/** Darker dimming behind the reading menu for contrast with the verse beneath. */
-export const CONTROLS_OVERLAY_BACKDROP = 'rgba(0, 0, 0, 0.78)'
+/** Fully opaque backdrop behind the reading menu. */
+export const CONTROLS_OVERLAY_BACKDROP = 'rgb(0, 0, 0)'
 
 function tokenizeVerse(text) {
   return String(text ?? '')

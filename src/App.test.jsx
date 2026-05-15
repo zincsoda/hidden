@@ -124,7 +124,7 @@ describe('App', () => {
     expect(screen.queryByRole('dialog', { name: /reading menu/i })).not.toBeInTheDocument()
   })
 
-  it('uses a darker reading menu backdrop and anchors the build label to the bottom of the overlay', async () => {
+  it('uses a fully opaque reading menu backdrop and anchors the build label to the bottom of the overlay', async () => {
     const user = userEvent.setup()
     render(<App />)
 
@@ -140,6 +140,10 @@ describe('App', () => {
     const body = dialog.querySelector('.controls-overlay-body')
     expect(body).toBeTruthy()
     expect(dialog.firstElementChild).toBe(body)
+  })
+
+  it('exports a fully opaque controls overlay backdrop color', () => {
+    expect(CONTROLS_OVERLAY_BACKDROP).toBe('rgb(0, 0, 0)')
   })
 
   it('opens the pick dialog from Choose verse in the overlay and closes the overlay', async () => {
