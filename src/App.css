@@ -60,6 +60,7 @@
   font-size: 0.9rem;
   cursor: pointer;
   transition: background 0.2s, border-color 0.2s;
+  box-sizing: border-box;
 }
 
 .new-verse-btn:hover {
@@ -79,9 +80,56 @@
 
 .verse-actions {
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
   gap: 0.75rem;
-  justify-content: center;
+  width: 100%;
+  max-width: 22rem;
+  margin-inline: auto;
+}
+
+.verse-actions-group {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.verse-actions-nav {
+  grid-template-columns: 1fr 1fr;
+}
+
+.verse-actions-memory {
+  grid-template-columns: 1fr 1fr;
+}
+
+.verse-actions-memory-wide {
+  grid-column: 1 / -1;
+}
+
+.verse-actions .new-verse-btn {
+  width: 100%;
+  min-height: 2.75rem;
+}
+
+@media (min-width: 36rem) {
+  .verse-actions {
+    max-width: none;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.75rem;
+  }
+
+  .verse-actions-group {
+    display: contents;
+  }
+
+  .verse-actions .new-verse-btn {
+    width: auto;
+    min-height: 0;
+  }
+
+  .verse-actions-memory-wide {
+    grid-column: auto;
+  }
 }
 
 .pick-dialog {
@@ -155,6 +203,17 @@
   gap: 0.5rem;
   flex-wrap: wrap;
   margin-top: 0.5rem;
+}
+
+@media (max-width: 35.99rem) {
+  .pick-dialog-actions {
+    flex-direction: column-reverse;
+  }
+
+  .pick-dialog-actions .new-verse-btn {
+    width: 100%;
+    min-height: 2.75rem;
+  }
 }
 
 .build-label {

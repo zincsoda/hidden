@@ -128,37 +128,41 @@ function App() {
             </blockquote>
             <cite className="verse-reference">— {verse.reference}</cite>
             <div className="verse-actions">
-              <button type="button" className="new-verse-btn" onClick={showNewVerse}>
-                Another verse
-              </button>
-              <button type="button" className="new-verse-btn" onClick={openPickVerse}>
-                Choose verse
-              </button>
-              <button
-                type="button"
-                className="new-verse-btn"
-                onClick={hideMoreWords}
-                disabled={verseWords.length === 0 || allWordsHidden}
-              >
-                Hide 2–3 words
-              </button>
-              <button
-                type="button"
-                className="new-verse-btn"
-                onClick={showAllWords}
-                disabled={hiddenWordIndices.size === 0}
-              >
-                Show all
-              </button>
-              <button
-                type="button"
-                className="new-verse-btn"
-                onClick={() => setRevealHiddenWords((v) => !v)}
-                disabled={hiddenWordIndices.size === 0}
-                aria-pressed={revealHiddenWords}
-              >
-                {revealHiddenWords ? 'Hide word text' : 'Show hidden words'}
-              </button>
+              <div className="verse-actions-group verse-actions-nav">
+                <button type="button" className="new-verse-btn" onClick={showNewVerse}>
+                  Another verse
+                </button>
+                <button type="button" className="new-verse-btn" onClick={openPickVerse}>
+                  Choose verse
+                </button>
+              </div>
+              <div className="verse-actions-group verse-actions-memory">
+                <button
+                  type="button"
+                  className="new-verse-btn"
+                  onClick={hideMoreWords}
+                  disabled={verseWords.length === 0 || allWordsHidden}
+                >
+                  Hide 2–3 words
+                </button>
+                <button
+                  type="button"
+                  className="new-verse-btn"
+                  onClick={showAllWords}
+                  disabled={hiddenWordIndices.size === 0}
+                >
+                  Show all
+                </button>
+                <button
+                  type="button"
+                  className="new-verse-btn verse-actions-memory-wide"
+                  onClick={() => setRevealHiddenWords((v) => !v)}
+                  disabled={hiddenWordIndices.size === 0}
+                  aria-pressed={revealHiddenWords}
+                >
+                  {revealHiddenWords ? 'Hide word text' : 'Show hidden words'}
+                </button>
+              </div>
             </div>
           </>
         ) : null}
