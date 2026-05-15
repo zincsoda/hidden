@@ -22,7 +22,7 @@ function App() {
   const [loading, setLoading] = useState(true)
   const [controlsOverlayOpen, setControlsOverlayOpen] = useState(false)
   /** When false, the three crowd / memory-practice buttons are hidden from the verse card. */
-  const [crowdModeVisible, setCrowdModeVisible] = useState(true)
+  const [crowdModeVisible, setCrowdModeVisible] = useState(false)
   const [hiddenWordIndices, setHiddenWordIndices] = useState(() => new Set())
   const [revealHiddenWords, setRevealHiddenWords] = useState(false)
   const [pickInput, setPickInput] = useState('')
@@ -266,17 +266,24 @@ function App() {
                 <button type="button" className="new-verse-btn" onClick={handleOverlayPickVerseClick}>
                   Choose verse
                 </button>
-                <button
-                  type="button"
-                  className="new-verse-btn controls-overlay-crowd-toggle"
-                  aria-pressed={crowdModeVisible}
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    setCrowdModeVisible((v) => !v)
-                  }}
+                <div
+                  className="controls-overlay-crowd-row"
+                  onClick={(e) => e.stopPropagation()}
                 >
-                  {crowdModeVisible ? 'Hide crowd mode' : 'Show crowd mode'}
-                </button>
+                  <span className="controls-overlay-crowd-label" id="crowd-mode-label">
+                    Crowd mode
+                  </span>
+                  <button
+                    type="button"
+                    className="ios-switch"
+                    role="switch"
+                    aria-checked={crowdModeVisible}
+                    aria-labelledby="crowd-mode-label"
+                    onClick={() => setCrowdModeVisible((v) => !v)}
+                  >
+                    <span className="ios-switch-thumb" aria-hidden="true" />
+                  </button>
+                </div>
               </div>
             </div>
           </div>
