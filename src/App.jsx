@@ -102,15 +102,18 @@ function App() {
               {verseWords.map((word, i) => (
                 <span key={i}>
                   {hiddenWordIndices.has(i) ? (
-                    revealHiddenWords ? (
-                      <span className="memory-hidden-word memory-word-visible">{word}</span>
-                    ) : (
+                    <span
+                      className="memory-hidden-word memory-word-slot"
+                      aria-label={revealHiddenWords ? undefined : 'Hidden word'}
+                    >
                       <span
-                        className="memory-hidden-word memory-blank"
-                        style={{ minWidth: `${Math.max(2.5, word.length * 0.55)}ch` }}
-                        aria-label="Hidden word"
-                      />
-                    )
+                        className={revealHiddenWords ? 'memory-word-visible' : undefined}
+                        style={{ visibility: revealHiddenWords ? 'visible' : 'hidden' }}
+                        aria-hidden={revealHiddenWords ? undefined : true}
+                      >
+                        {word}
+                      </span>
+                    </span>
                   ) : (
                     word
                   )}
