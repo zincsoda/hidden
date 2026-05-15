@@ -21,13 +21,25 @@
   font-style: italic;
 }
 
+.memory-hidden-word {
+  background: rgba(56, 189, 248, 0.18);
+  border-bottom: 2px solid rgba(56, 189, 248, 0.65);
+  border-radius: 2px;
+  padding: 0 0.1em;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+
 .memory-blank {
   display: inline-block;
   vertical-align: baseline;
   height: 0.85em;
   margin: 0 0.05em;
-  border-bottom: 2px solid rgba(255, 255, 255, 0.35);
   box-sizing: border-box;
+}
+
+.memory-word-visible {
+  display: inline;
 }
 
 .verse-reference {
