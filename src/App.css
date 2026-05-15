@@ -8,12 +8,13 @@
 }
 
 .verse-card {
-  max-width: 36rem;
+  width: 100%;
+  max-width: min(100%, 40rem);
   text-align: center;
 }
 
 .verse-text {
-  font-size: clamp(1.125rem, 2.5vw, 1.5rem);
+  font-size: clamp(1.125rem, 2.5vw, 1.75rem);
   line-height: 1.65;
   color: #e8e6e3;
   margin: 0 0 1.5rem;
@@ -42,7 +43,7 @@
 
 .verse-reference {
   display: block;
-  font-size: 1rem;
+  font-size: clamp(0.95rem, 2vw, 1.125rem);
   color: #9ca3af;
   font-style: normal;
   margin-bottom: 2rem;
@@ -152,4 +153,46 @@
   gap: 0.5rem;
   flex-wrap: wrap;
   margin-top: 0.5rem;
+}
+
+/*
+ * Large / TV-style viewports: much larger, vmin-based type and a sturdy sans stack
+ * so verse text stays readable at typical living-room viewing distances.
+ */
+@media (min-width: 1600px) and (min-height: 800px) {
+  .app {
+    padding: clamp(1.5rem, 3vmin, 4rem);
+  }
+
+  .verse-card {
+    max-width: min(95vw, 90rem);
+  }
+
+  .verse-text {
+    font-family:
+      system-ui,
+      'Segoe UI',
+      Roboto,
+      'Helvetica Neue',
+      Arial,
+      sans-serif;
+    font-style: normal;
+    font-weight: 500;
+    font-size: clamp(2rem, 3.8vmin + 1rem, 5.5rem);
+    line-height: 1.38;
+    letter-spacing: 0.015em;
+    text-rendering: optimizeLegibility;
+    margin-bottom: clamp(1.25rem, 2.5vmin, 3rem);
+  }
+
+  .verse-reference {
+    font-size: clamp(1.35rem, 2.4vmin + 0.35rem, 2.75rem);
+    margin-bottom: clamp(1.5rem, 3vmin, 3rem);
+  }
+
+  .new-verse-btn {
+    font-size: clamp(1rem, 1.5vmin + 0.65rem, 1.35rem);
+    padding: clamp(0.75rem, 1.2vmin, 1rem) clamp(1.25rem, 2vmin, 1.75rem);
+    border-radius: 10px;
+  }
 }
