@@ -95,10 +95,6 @@
   gap: 0.5rem;
 }
 
-.verse-actions-nav {
-  grid-template-columns: 1fr 1fr;
-}
-
 .verse-actions-memory {
   grid-template-columns: 1fr 1fr;
 }
@@ -219,20 +215,73 @@
   }
 }
 
-.build-label {
+.controls-overlay-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+.controls-overlay {
   position: fixed;
-  left: 0;
-  right: 0;
-  bottom: 0.65rem;
-  margin: 0;
+  inset: 0;
+  z-index: 950;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  box-sizing: border-box;
+  background: rgba(0, 0, 0, 0.55);
+}
+
+.controls-overlay-inner {
+  max-width: min(22rem, 100%);
+  width: 100%;
   text-align: center;
-  font-size: 0.68rem;
+}
+
+.controls-overlay-build {
+  margin: 0 0 0.85rem;
+  font-size: 0.72rem;
   letter-spacing: 0.02em;
-  color: rgba(156, 163, 175, 0.42);
+  color: rgba(203, 213, 225, 0.8);
   font-style: normal;
   font-weight: 400;
-  pointer-events: none;
   user-select: none;
+}
+
+.controls-overlay-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+}
+
+.controls-overlay-actions .new-verse-btn {
+  width: 100%;
+  min-height: 2.75rem;
+}
+
+@media (max-width: 35.99rem) {
+  .controls-overlay-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .controls-overlay-actions .new-verse-btn {
+    width: 100%;
+    min-height: 2.75rem;
+  }
+}
+
+@media (min-width: 36rem) {
+  .controls-overlay-actions .new-verse-btn {
+    min-height: 0;
+  }
 }
 
 /*
