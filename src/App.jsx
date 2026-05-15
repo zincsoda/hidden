@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import { getRandomVerse, findVerseByReference } from './verses'
 import { pickRandomFromPool } from './memoryHelpers'
+import ReloadPrompt from './components/ReloadPrompt.jsx'
 import './App.css'
 
 const WORD_SPLIT = /\s+/
@@ -192,6 +193,8 @@ function App() {
           </div>
         </form>
       </dialog>
+
+      <ReloadPrompt />
     </div>
   )
 }
