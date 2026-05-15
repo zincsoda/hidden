@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import { getRandomVerse, findVerseByReference } from './verses'
+import { pickRandomFromPool } from './memoryHelpers'
 import './App.css'
 
 const WORD_SPLIT = /\s+/
@@ -11,22 +12,11 @@ function tokenizeVerse(text) {
     .filter(Boolean)
 }
 
-/** Pick up to `count` items from `pool` uniformly at random, without replacement. */
-function pickRandomFromPool(pool, count) {
-  const arr = [...pool]
-  const n = Math.min(count, arr.length)
-  if (n <= 0) return []
-  for (let i = arr.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1))
-    ;[arr[i], arr[j]] = [arr[j], arr[i]]
-  }
-  return arr.slice(0, n)
-}
-
 function App() {
   const [verse, setVerse] = useState(null)
   const [loading, setLoading] = useState(true)
   const [hiddenWordIndices, setHiddenWordIndices] = useState(() => new Set())
+  const [revealHiddenWords, setRevealHiddenWords] = useState(false)
   const [pickInput, setPickInput] = useState('')
   const [pickError, setPickError] = useState('')
   const pickDialogRef = useRef(null)
@@ -74,6 +64,7 @@ function App() {
 
   useEffect(() => {
     setHiddenWordIndices(new Set())
+    setRevealHiddenWords(false)
   }, [verse?.reference, verse?.text])
 
   const verseWords = useMemo(() => (verse ? tokenizeVerse(verse.text) : []), [verse?.text])
@@ -93,6 +84,7 @@ function App() {
 
   const showAllWords = useCallback(() => {
     setHiddenWordIndices(new Set())
+    setRevealHiddenWords(false)
   }, [])
 
   const allWordsHidden =
@@ -110,11 +102,15 @@ function App() {
               {verseWords.map((word, i) => (
                 <span key={i}>
                   {hiddenWordIndices.has(i) ? (
-                    <span
-                      className="memory-blank"
-                      style={{ minWidth: `${Math.max(2.5, word.length * 0.55)}ch` }}
-                      aria-label="Hidden word"
-                    />
+                    revealHiddenWords ? (
+                      <span className="memory-hidden-word memory-word-visible">{word}</span>
+                    ) : (
+                      <span
+                        className="memory-hidden-word memory-blank"
+                        style={{ minWidth: `${Math.max(2.5, word.length * 0.55)}ch` }}
+                        aria-label="Hidden word"
+                      />
+                    )
                   ) : (
                     word
                   )}
@@ -146,6 +142,15 @@ function App() {
                 disabled={hiddenWordIndices.size === 0}
               >
                 Show all
+              </button>
+              <button
+                type="button"
+                className="new-verse-btn"
+                onClick={() => setRevealHiddenWords((v) => !v)}
+                disabled={hiddenWordIndices.size === 0}
+                aria-pressed={revealHiddenWords}
+              >
+                {revealHiddenWords ? 'Hide word text' : 'Show hidden words'}
               </button>
             </div>
           </>
