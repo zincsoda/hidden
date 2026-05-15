@@ -11,16 +11,31 @@ describe('display typography for large / TV viewports', () => {
     expect(appCss).toMatch(/@media\s*\(\s*min-width:\s*1600px\s*\)\s*and\s*\(\s*min-height:\s*800px\s*\)/)
   })
 
+  it('also applies TV typography when html has is-large-display (mirrored mobile)', () => {
+    expect(appCss).toMatch(/html\.is-large-display\s+\.verse-text\s*\{/)
+  })
+
   it('scales verse text with vmin so type tracks both width and height of the screen', () => {
     const tvBlock = appCss.slice(appCss.indexOf('@media (min-width: 1600px)'))
     const verseTextRule = tvBlock.slice(tvBlock.indexOf('.verse-text {'))
     expect(verseTextRule).toMatch(/font-size:\s*clamp\([^)]*vmin/s)
   })
 
-  it('uses a sans UI stack on large displays for clearer text at a distance', () => {
+  it('uses screen-based --display-vmin for mirrored large-display class rules', () => {
+    const mirroredBlock = appCss.slice(appCss.indexOf('html.is-large-display .verse-text'))
+    expect(mirroredBlock).toMatch(/var\(--display-vmin,\s*1vmin\)/)
+  })
+
+  it('uses Source Sans 3 for verse text (readable sans at signage distance)', () => {
+    const indexCss = readFileSync(join(__dirname, 'index.css'), 'utf8')
+    expect(indexCss).toMatch(/--verse-font:[\s\S]*Source Sans 3/)
+    expect(appCss).toMatch(/\.verse-text\s*\{[\s\S]*font-family:\s*var\(--verse-font\)/)
+  })
+
+  it('uses semibold weight on large displays for clearer text at a distance', () => {
     const tvBlock = appCss.slice(appCss.indexOf('@media (min-width: 1600px)'))
     const verseTextRule = tvBlock.slice(tvBlock.indexOf('.verse-text {'))
-    expect(verseTextRule).toContain('system-ui')
+    expect(verseTextRule).toMatch(/font-weight:\s*600/)
   })
 
   it('widens the verse column on large displays', () => {

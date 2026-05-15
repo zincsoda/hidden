@@ -5,6 +5,33 @@
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <link rel="manifest" href="./manifest.json" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script>
+      (function () {
+        var KEY = 'displayMode';
+        var pref = localStorage.getItem(KEY);
+        if (pref === 'normal') return;
+        if (pref === 'large') {
+          document.documentElement.classList.add('is-large-display');
+          return;
+        }
+        if (window.matchMedia('(min-width: 1600px) and (min-height: 800px)').matches) return;
+        var sw = screen.width;
+        var sh = screen.height;
+        var screenLong = Math.max(sw, sh);
+        var screenShort = Math.min(sw, sh);
+        var viewLong = Math.max(innerWidth, innerHeight);
+        var viewShort = Math.min(innerWidth, innerHeight);
+        var screenLarge = screenLong >= 1600 && screenShort >= 800;
+        var viewportCompact = viewLong < 1600 || viewShort < 800;
+        if (screenLarge && viewportCompact) {
+          document.documentElement.classList.add('is-large-display');
+          return;
+        }
+        if (screenLong >= 1200 && viewLong <= screenLong * 0.6) {
+          document.documentElement.classList.add('is-large-display');
+        }
+      })();
+    </script>
     <meta name="theme-color" content="#0f0f12" />
     <meta name="description" content="A simple app that shows a random Bible verse." />
     <title>Random Bible Verse</title>

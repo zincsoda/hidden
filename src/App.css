@@ -14,12 +14,15 @@
 }
 
 .verse-text {
+  font-family: var(--verse-font);
   font-size: clamp(1.125rem, 2.5vw, 1.75rem);
-  line-height: 1.65;
+  line-height: 1.55;
   color: #e8e6e3;
   margin: 0 0 1.5rem;
-  font-weight: 400;
-  font-style: italic;
+  font-weight: 500;
+  font-style: normal;
+  letter-spacing: 0.01em;
+  text-rendering: optimizeLegibility;
 }
 
 /* Slot uses visibility toggle so width matches hidden vs revealed; no fill while concealed */
@@ -233,8 +236,9 @@
 }
 
 /*
- * Large / TV-style viewports: much larger, vmin-based type and a sturdy sans stack
+ * Large / TV-style display: much larger, vmin-based type and a sturdy sans stack
  * so verse text stays readable at typical living-room viewing distances.
+ * Wide viewports use the media query; mirrored phones get html.is-large-display from JS.
  */
 @media (min-width: 1600px) and (min-height: 800px) {
   .app {
@@ -246,18 +250,10 @@
   }
 
   .verse-text {
-    font-family:
-      system-ui,
-      'Segoe UI',
-      Roboto,
-      'Helvetica Neue',
-      Arial,
-      sans-serif;
-    font-style: normal;
-    font-weight: 500;
+    font-weight: 600;
     font-size: clamp(2rem, 3.8vmin + 1rem, 5.5rem);
-    line-height: 1.38;
-    letter-spacing: 0.015em;
+    line-height: 1.35;
+    letter-spacing: 0.02em;
     text-rendering: optimizeLegibility;
     margin-bottom: clamp(1.25rem, 2.5vmin, 3rem);
   }
@@ -272,4 +268,34 @@
     padding: clamp(0.75rem, 1.2vmin, 1rem) clamp(1.25rem, 2vmin, 1.75rem);
     border-radius: 10px;
   }
+}
+
+html.is-large-display .verse-card {
+  max-width: min(95vw, 90rem);
+}
+
+html.is-large-display .verse-text {
+  font-weight: 600;
+  /* --display-vmin is screen-based when mirrored; otherwise matches vmin */
+  font-size: clamp(2rem, calc(3.8 * var(--display-vmin, 1vmin) + 1rem), 5.5rem);
+  line-height: 1.35;
+  letter-spacing: 0.02em;
+  text-rendering: optimizeLegibility;
+  margin-bottom: clamp(1.25rem, calc(2.5 * var(--display-vmin, 1vmin)), 3rem);
+}
+
+html.is-large-display .verse-reference {
+  font-size: clamp(1.35rem, calc(2.4 * var(--display-vmin, 1vmin) + 0.35rem), 2.75rem);
+  margin-bottom: clamp(1.5rem, calc(3 * var(--display-vmin, 1vmin)), 3rem);
+}
+
+html.is-large-display .new-verse-btn {
+  font-size: clamp(1rem, calc(1.5 * var(--display-vmin, 1vmin) + 0.65rem), 1.35rem);
+  padding: clamp(0.75rem, calc(1.2 * var(--display-vmin, 1vmin)), 1rem)
+    clamp(1.25rem, calc(2 * var(--display-vmin, 1vmin)), 1.75rem);
+  border-radius: 10px;
+}
+
+html.is-large-display .app {
+  padding: clamp(1.5rem, calc(3 * var(--display-vmin, 1vmin)), 4rem);
 }

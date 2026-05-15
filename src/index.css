@@ -1,5 +1,13 @@
 :root {
-  font-family: 'Georgia', 'Times New Roman', serif;
+  --verse-font:
+    'Source Sans 3',
+    system-ui,
+    'Segoe UI',
+    Roboto,
+    'Helvetica Neue',
+    Arial,
+    sans-serif;
+  font-family: system-ui, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
   color: #e8e6e3;
