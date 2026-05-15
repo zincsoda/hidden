@@ -2,6 +2,7 @@
 export const verses = [
   { reference: 'John 3:16', text: 'For God so loved the world, that he gave his only begotten Son, that whosoever believeth in him should not perish, but have everlasting life.' },
   { reference: 'Psalm 23:1', text: 'The Lord is my shepherd; I shall not want.' },
+  { reference: 'Philippians 4:8', text: 'Finally, brothers and sisters, whatever is true, whatever is honorable, whatever is right, whatever is pure, whatever is lovely, whatever is commendable, if there is any excellence and if anything worthy of praise, think about these things.' },
   { reference: 'Philippians 4:13', text: 'I can do all things through Christ which strengtheneth me.' },
   { reference: 'Proverbs 3:5–6', text: 'Trust in the Lord with all thine heart; and lean not unto thine own understanding. In all thy ways acknowledge him, and he shall direct thy paths.' },
   { reference: 'Romans 8:28', text: 'And we know that all things work together for good to them that love God, to them who are the called according to his purpose.' },
@@ -34,4 +35,20 @@ export const verses = [
 
 export function getRandomVerse() {
   return verses[Math.floor(Math.random() * verses.length)]
+}
+
+/** Normalize a reference for comparison (case, dashes, whitespace). */
+export function normalizeReference(s) {
+  return String(s)
+    .trim()
+    .toLowerCase()
+    .replace(/[\u2013\u2014]/g, '-')
+    .replace(/\s+/g, ' ')
+}
+
+/** Find a verse in the local list by reference string, or null if not found. */
+export function findVerseByReference(query) {
+  const key = normalizeReference(query)
+  if (!key) return null
+  return verses.find((v) => normalizeReference(v.reference) === key) ?? null
 }

@@ -21,6 +21,15 @@
   font-style: italic;
 }
 
+.memory-blank {
+  display: inline-block;
+  vertical-align: baseline;
+  height: 0.85em;
+  margin: 0 0.05em;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.35);
+  box-sizing: border-box;
+}
+
 .verse-reference {
   display: block;
   font-size: 1rem;
@@ -48,4 +57,89 @@
 .new-verse-btn:focus-visible {
   outline: 2px solid rgba(255, 255, 255, 0.4);
   outline-offset: 2px;
+}
+
+.new-verse-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.verse-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: center;
+}
+
+.pick-dialog {
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 12px;
+  padding: 0;
+  background: #16161a;
+  color: #e8e6e3;
+  max-width: min(100vw - 2rem, 22rem);
+}
+
+.pick-dialog::backdrop {
+  background: rgba(0, 0, 0, 0.55);
+}
+
+.pick-form {
+  padding: 1.25rem 1.5rem;
+  margin: 0;
+}
+
+.pick-dialog-title {
+  margin: 0 0 0.5rem;
+  font-size: 1.125rem;
+  font-weight: 600;
+  font-family: inherit;
+}
+
+.pick-dialog-hint {
+  margin: 0 0 1rem;
+  font-size: 0.85rem;
+  color: #9ca3af;
+  line-height: 1.45;
+}
+
+.pick-label {
+  display: block;
+  text-align: left;
+  font-size: 0.8rem;
+  color: #9ca3af;
+  margin-bottom: 0.35rem;
+}
+
+.pick-input {
+  width: 100%;
+  padding: 0.55rem 0.7rem;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(0, 0, 0, 0.25);
+  color: #e8e6e3;
+  font-size: 1rem;
+  font-family: inherit;
+  margin-bottom: 0.5rem;
+  box-sizing: border-box;
+}
+
+.pick-input:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.35);
+  outline-offset: 2px;
+}
+
+.pick-error {
+  margin: 0 0 0.75rem;
+  font-size: 0.85rem;
+  color: #fca5a5;
+  text-align: left;
+}
+
+.pick-dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-top: 0.5rem;
 }
