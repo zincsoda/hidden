@@ -33,9 +33,21 @@ describe('App', () => {
     })
   })
 
+  /** Turn on verse-card memory buttons (crowd mode), then close the reading menu. */
+  async function enableCrowdModeFromMenu(user) {
+    await user.click(screen.getByRole('blockquote'))
+    const crowdSwitch = screen.getByRole('switch', { name: /^crowd mode$/i })
+    if (crowdSwitch.getAttribute('aria-checked') !== 'true') {
+      await user.click(crowdSwitch)
+    }
+    await user.click(screen.getByRole('button', { name: /hide reading menu/i }))
+  }
+
   it('toggles hidden word text; highlight only when revealed, not on the empty slot', async () => {
     const user = userEvent.setup()
     render(<App />)
+
+    await enableCrowdModeFromMenu(user)
 
     await user.click(screen.getByRole('button', { name: /hide 2/i }))
 
@@ -65,6 +77,8 @@ describe('App', () => {
     const user = userEvent.setup()
     render(<App />)
 
+    await enableCrowdModeFromMenu(user)
+
     await user.click(screen.getByRole('button', { name: /hide 2/i }))
 
     const slot = screen.getByLabelText('Hidden word')
@@ -80,7 +94,10 @@ describe('App', () => {
   })
 
   it('disables the reveal toggle when no words are hidden', async () => {
+    const user = userEvent.setup()
     render(<App />)
+
+    await enableCrowdModeFromMenu(user)
 
     expect(screen.getByRole('button', { name: /show hidden words/i })).toBeDisabled()
   })
@@ -157,25 +174,41 @@ describe('App', () => {
     expect(screen.getByRole('heading', { name: /go to verse/i })).toBeInTheDocument()
   })
 
-  it('does not open the overlay when the event target is the memory controls strip wrapper', () => {
+  it('does not open the overlay when the event target is the memory controls strip wrapper', async () => {
+    const user = userEvent.setup()
     const { container } = render(<App />)
+    await enableCrowdModeFromMenu(user)
     const actions = container.querySelector('.verse-actions')
     expect(actions).toBeTruthy()
     fireEvent.click(actions)
     expect(screen.queryByRole('dialog', { name: /reading menu/i })).not.toBeInTheDocument()
   })
 
-  it('reading menu toggle hides crowd mode controls on the verse card while keeping verses readable', async () => {
+  it('defaults crowd mode off and exposes an iOS-style switch in the reading menu', async () => {
     const user = userEvent.setup()
     render(<App />)
+
+    expect(screen.queryByRole('button', { name: /hide 2/i })).not.toBeInTheDocument()
+
+    await user.click(screen.getByRole('blockquote'))
+    const crowdSwitch = screen.getByRole('switch', { name: /^crowd mode$/i })
+    expect(crowdSwitch).toHaveClass('ios-switch')
+    expect(crowdSwitch).toHaveAttribute('aria-checked', 'false')
+  })
+
+  it('reading menu switch hides crowd mode controls on the verse card while keeping verses readable', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+
+    await enableCrowdModeFromMenu(user)
 
     expect(screen.getByRole('button', { name: /hide 2/i })).toBeInTheDocument()
 
     await user.click(screen.getByRole('blockquote'))
-    const crowdToggle = screen.getByRole('button', { name: /^hide crowd mode$/i })
-    expect(crowdToggle).toHaveAttribute('aria-pressed', 'true')
+    const crowdSwitch = screen.getByRole('switch', { name: /^crowd mode$/i })
+    expect(crowdSwitch).toHaveAttribute('aria-checked', 'true')
 
-    await user.click(crowdToggle)
+    await user.click(crowdSwitch)
     expect(screen.queryByRole('button', { name: /hide 2/i })).not.toBeInTheDocument()
     expect(screen.getByRole('blockquote')).toHaveTextContent(/Alpha Beta Gamma/)
 
@@ -188,16 +221,19 @@ describe('App', () => {
     const user = userEvent.setup()
     render(<App />)
 
+    await enableCrowdModeFromMenu(user)
+
     await user.click(screen.getByRole('blockquote'))
-    await user.click(screen.getByRole('button', { name: /^hide crowd mode$/i }))
+    await user.click(screen.getByRole('switch', { name: /^crowd mode$/i }))
+    expect(screen.getByRole('switch', { name: /^crowd mode$/i })).toHaveAttribute('aria-checked', 'false')
     await user.click(screen.getByRole('button', { name: /^hide reading menu/i }))
 
     expect(screen.queryByRole('button', { name: /hide 2/i })).not.toBeInTheDocument()
 
     await user.click(screen.getByRole('blockquote'))
-    await user.click(screen.getByRole('button', { name: /^show crowd mode$/i }))
-    expect(screen.getByRole('button', { name: /^hide crowd mode$/i })).toHaveAttribute(
-      'aria-pressed',
+    await user.click(screen.getByRole('switch', { name: /^crowd mode$/i }))
+    expect(screen.getByRole('switch', { name: /^crowd mode$/i })).toHaveAttribute(
+      'aria-checked',
       'true',
     )
     await user.click(screen.getByRole('button', { name: /^hide reading menu/i }))
