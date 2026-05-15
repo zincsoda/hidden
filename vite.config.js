@@ -1,11 +1,29 @@
+import { execSync } from 'node:child_process'
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
+
+function gitCommitCount() {
+  try {
+    return execSync('git rev-list --count HEAD', { encoding: 'utf8' }).trim()
+  } catch {
+    return 'dev'
+  }
+}
+
+const buildInfo = {
+  commitCount: gitCommitCount(),
+  deployedAt: new Date().toISOString(),
+}
 
 // https://vite.dev/config/
 // BASE_PATH is set in CI for GitHub Pages (e.g. /random-bible-verse/)
 export default defineConfig({
   base: process.env.BASE_PATH || '/',
+  define: {
+    __BUILD_COMMIT_COUNT__: JSON.stringify(buildInfo.commitCount),
+    __BUILD_DEPLOYED_AT__: JSON.stringify(buildInfo.deployedAt),
+  },
   plugins: [
     react(),
     VitePWA({

@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import { getRandomVerse, findVerseByReference } from './verses'
 import { pickRandomFromPool } from './memoryHelpers'
 import ReloadPrompt from './components/ReloadPrompt.jsx'
+import { formatBuildLabel } from './buildInfo.js'
 import './App.css'
 
 const WORD_SPLIT = /\s+/
@@ -195,6 +196,10 @@ function App() {
       </dialog>
 
       <ReloadPrompt />
+
+      <p className="build-label" aria-label="Build version">
+        {formatBuildLabel()}
+      </p>
     </div>
   )
 }
