@@ -33,6 +33,12 @@ The site will be at `https://<your-username>.github.io/random-bible-verse/`.
 
 If your default branch is not `main`, edit `.github/workflows/deploy.yml` and change `branches: [main]` to your branch (e.g. `master`).
 
+### Faster updates for the installed PWA
+
+The app checks for a new service worker as soon as it opens, then every two minutes while it stays open, so deploys are noticed sooner than relying on the browser alone. You still need to tap **Reload** when the update banner appears.
+
+GitHub Pages does not let you set custom `Cache-Control` headers on `github.io`, so CDN caching of `sw.js` can occasionally add extra delay after a deploy. If that becomes a problem, a common approach is to put a CDN you control (for example Cloudflare) in front of the site and bypass or shorten cache for the service worker URL.
+
 ## Features
 
 - Random verse on load; “Another verse” loads a new one
