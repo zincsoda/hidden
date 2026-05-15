@@ -21,6 +21,8 @@ function App() {
   const [verse, setVerse] = useState(null)
   const [loading, setLoading] = useState(true)
   const [controlsOverlayOpen, setControlsOverlayOpen] = useState(false)
+  /** When false, the three crowd / memory-practice buttons are hidden from the verse card. */
+  const [crowdModeVisible, setCrowdModeVisible] = useState(true)
   const [hiddenWordIndices, setHiddenWordIndices] = useState(() => new Set())
   const [revealHiddenWords, setRevealHiddenWords] = useState(false)
   const [pickInput, setPickInput] = useState('')
@@ -164,35 +166,37 @@ function App() {
               &rdquo;
             </blockquote>
             <cite className="verse-reference">— {verse.reference}</cite>
-            <div className="verse-actions">
-              <div className="verse-actions-group verse-actions-memory">
-                <button
-                  type="button"
-                  className="new-verse-btn"
-                  onClick={hideMoreWords}
-                  disabled={verseWords.length === 0 || allWordsHidden}
-                >
-                  Hide 2–3 words
-                </button>
-                <button
-                  type="button"
-                  className="new-verse-btn"
-                  onClick={showAllWords}
-                  disabled={hiddenWordIndices.size === 0}
-                >
-                  Show all
-                </button>
-                <button
-                  type="button"
-                  className="new-verse-btn verse-actions-memory-wide"
-                  onClick={() => setRevealHiddenWords((v) => !v)}
-                  disabled={hiddenWordIndices.size === 0}
-                  aria-pressed={revealHiddenWords}
-                >
-                  {revealHiddenWords ? 'Hide word text' : 'Show hidden words'}
-                </button>
+            {crowdModeVisible ? (
+              <div className="verse-actions">
+                <div className="verse-actions-group verse-actions-memory">
+                  <button
+                    type="button"
+                    className="new-verse-btn"
+                    onClick={hideMoreWords}
+                    disabled={verseWords.length === 0 || allWordsHidden}
+                  >
+                    Hide 2–3 words
+                  </button>
+                  <button
+                    type="button"
+                    className="new-verse-btn"
+                    onClick={showAllWords}
+                    disabled={hiddenWordIndices.size === 0}
+                  >
+                    Show all
+                  </button>
+                  <button
+                    type="button"
+                    className="new-verse-btn verse-actions-memory-wide"
+                    onClick={() => setRevealHiddenWords((v) => !v)}
+                    disabled={hiddenWordIndices.size === 0}
+                    aria-pressed={revealHiddenWords}
+                  >
+                    {revealHiddenWords ? 'Hide word text' : 'Show hidden words'}
+                  </button>
+                </div>
               </div>
-            </div>
+            ) : null}
           </>
         ) : null}
       </main>
@@ -261,6 +265,17 @@ function App() {
                 </button>
                 <button type="button" className="new-verse-btn" onClick={handleOverlayPickVerseClick}>
                   Choose verse
+                </button>
+                <button
+                  type="button"
+                  className="new-verse-btn controls-overlay-crowd-toggle"
+                  aria-pressed={crowdModeVisible}
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setCrowdModeVisible((v) => !v)
+                  }}
+                >
+                  {crowdModeVisible ? 'Hide crowd mode' : 'Show crowd mode'}
                 </button>
               </div>
             </div>

@@ -308,6 +308,10 @@
   gap: 0.5rem;
 }
 
+.controls-overlay-crowd-toggle {
+  grid-column: 1 / -1;
+}
+
 .controls-overlay-actions .new-verse-btn {
   width: 100%;
   min-height: 2.75rem;
