@@ -7,6 +7,9 @@ import './App.css'
 
 const WORD_SPLIT = /\s+/
 
+/** Darker dimming behind the reading menu for contrast with the verse beneath. */
+export const CONTROLS_OVERLAY_BACKDROP = 'rgba(0, 0, 0, 0.78)'
+
 function tokenizeVerse(text) {
   return String(text ?? '')
     .trim()
@@ -244,24 +247,27 @@ function App() {
           aria-modal="true"
           aria-labelledby="controls-overlay-heading"
           className="controls-overlay"
+          style={{ backgroundColor: CONTROLS_OVERLAY_BACKDROP }}
           onClick={closeControlsOverlay}
         >
-          <div className="controls-overlay-inner">
-            <h2 id="controls-overlay-heading" className="controls-overlay-visually-hidden">
-              Reading menu
-            </h2>
-            <p className="controls-overlay-build" aria-label="Build version">
-              {formatBuildLabel()}
-            </p>
-            <div className="controls-overlay-actions">
-              <button type="button" className="new-verse-btn" onClick={handleOverlayAnotherVerseClick}>
-                Another verse
-              </button>
-              <button type="button" className="new-verse-btn" onClick={handleOverlayPickVerseClick}>
-                Choose verse
-              </button>
+          <div className="controls-overlay-body">
+            <div className="controls-overlay-inner">
+              <h2 id="controls-overlay-heading" className="controls-overlay-visually-hidden">
+                Reading menu
+              </h2>
+              <div className="controls-overlay-actions">
+                <button type="button" className="new-verse-btn" onClick={handleOverlayAnotherVerseClick}>
+                  Another verse
+                </button>
+                <button type="button" className="new-verse-btn" onClick={handleOverlayPickVerseClick}>
+                  Choose verse
+                </button>
+              </div>
             </div>
           </div>
+          <p className="controls-overlay-build" aria-label="Build version">
+            {formatBuildLabel()}
+          </p>
         </div>
       ) : null}
 

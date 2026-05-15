@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { render, screen, within, cleanup, fireEvent } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import App from './App.jsx'
+import App, { CONTROLS_OVERLAY_BACKDROP } from './App.jsx'
 import * as verses from './verses'
 import { pickRandomFromPool } from './memoryHelpers'
 
@@ -111,7 +111,8 @@ describe('App', () => {
     expect(screen.queryByRole('button', { name: /another verse/i })).not.toBeInTheDocument()
 
     await user.click(screen.getByRole('blockquote'))
-    expect(screen.getByRole('dialog', { name: /reading menu/i })).toBeInTheDocument()
+    const dialog = screen.getByRole('dialog', { name: /reading menu/i })
+    expect(dialog).toBeInTheDocument()
     expect(screen.getByLabelText('Build version')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /another verse/i })).toBeInTheDocument()
 
@@ -121,6 +122,24 @@ describe('App', () => {
     await user.click(screen.getByRole('blockquote'))
     await user.keyboard('{Escape}')
     expect(screen.queryByRole('dialog', { name: /reading menu/i })).not.toBeInTheDocument()
+  })
+
+  it('uses a darker reading menu backdrop and anchors the build label to the bottom of the overlay', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+
+    await user.click(screen.getByRole('blockquote'))
+    const dialog = screen.getByRole('dialog', { name: /reading menu/i })
+
+    expect(dialog).toHaveStyle({ backgroundColor: CONTROLS_OVERLAY_BACKDROP })
+
+    const build = dialog.querySelector('.controls-overlay-build')
+    expect(build).toBeTruthy()
+    expect(dialog.lastElementChild).toBe(build)
+
+    const body = dialog.querySelector('.controls-overlay-body')
+    expect(body).toBeTruthy()
+    expect(dialog.firstElementChild).toBe(body)
   })
 
   it('opens the pick dialog from Choose verse in the overlay and closes the overlay', async () => {
