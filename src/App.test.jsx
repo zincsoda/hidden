@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { render, screen, within, cleanup } from '@testing-library/react'
+import { render, screen, within, cleanup, fireEvent } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import App from './App.jsx'
 import * as verses from './verses'
@@ -83,5 +83,44 @@ describe('App', () => {
     render(<App />)
 
     expect(screen.getByRole('button', { name: /show hidden words/i })).toBeDisabled()
+  })
+
+  it('opens an overlay from the verse area with build label and navigation; dismisses via tap on overlay or Escape', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+
+    expect(screen.queryByLabelText('Build version')).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /another verse/i })).not.toBeInTheDocument()
+
+    await user.click(screen.getByRole('blockquote'))
+    expect(screen.getByRole('dialog', { name: /reading menu/i })).toBeInTheDocument()
+    expect(screen.getByLabelText('Build version')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /another verse/i })).toBeInTheDocument()
+
+    await user.click(screen.getByLabelText('Build version'))
+    expect(screen.queryByRole('dialog', { name: /reading menu/i })).not.toBeInTheDocument()
+
+    await user.click(screen.getByRole('blockquote'))
+    await user.keyboard('{Escape}')
+    expect(screen.queryByRole('dialog', { name: /reading menu/i })).not.toBeInTheDocument()
+  })
+
+  it('opens the pick dialog from Choose verse in the overlay and closes the overlay', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+
+    await user.click(screen.getByRole('blockquote'))
+    await user.click(screen.getByRole('button', { name: /choose verse/i }))
+
+    expect(screen.queryByRole('heading', { name: /reading menu/i })).not.toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: /go to verse/i })).toBeInTheDocument()
+  })
+
+  it('does not open the overlay when the event target is the memory controls strip wrapper', () => {
+    const { container } = render(<App />)
+    const actions = container.querySelector('.verse-actions')
+    expect(actions).toBeTruthy()
+    fireEvent.click(actions)
+    expect(screen.queryByRole('dialog', { name: /reading menu/i })).not.toBeInTheDocument()
   })
 })

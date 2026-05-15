@@ -17,11 +17,16 @@ function tokenizeVerse(text) {
 function App() {
   const [verse, setVerse] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [controlsOverlayOpen, setControlsOverlayOpen] = useState(false)
   const [hiddenWordIndices, setHiddenWordIndices] = useState(() => new Set())
   const [revealHiddenWords, setRevealHiddenWords] = useState(false)
   const [pickInput, setPickInput] = useState('')
   const [pickError, setPickError] = useState('')
   const pickDialogRef = useRef(null)
+
+  const closeControlsOverlay = useCallback(() => {
+    setControlsOverlayOpen(false)
+  }, [])
 
   const showNewVerse = () => {
     setLoading(true)
@@ -30,6 +35,7 @@ function App() {
   }
 
   const openPickVerse = () => {
+    closeControlsOverlay()
     setPickError('')
     setPickInput(verse?.reference ?? '')
     const d = pickDialogRef.current
@@ -69,6 +75,15 @@ function App() {
     setRevealHiddenWords(false)
   }, [verse?.reference, verse?.text])
 
+  useEffect(() => {
+    if (!controlsOverlayOpen) return
+    const onKeyDown = (e) => {
+      if (e.key === 'Escape') closeControlsOverlay()
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [controlsOverlayOpen, closeControlsOverlay])
+
   const verseWords = useMemo(() => (verse ? tokenizeVerse(verse.text) : []), [verse?.text])
 
   const hideMoreWords = useCallback(() => {
@@ -92,9 +107,28 @@ function App() {
   const allWordsHidden =
     verseWords.length > 0 && hiddenWordIndices.size >= verseWords.length
 
+  const handleVerseCardClick = (e) => {
+    const el = e.target instanceof Element ? e.target : null
+    if (el?.closest('button')) return
+    if (el?.closest('.verse-actions')) return
+    if (!verse || loading) return
+    setControlsOverlayOpen(true)
+  }
+
+  const handleOverlayAnotherVerseClick = (e) => {
+    e.stopPropagation()
+    closeControlsOverlay()
+    showNewVerse()
+  }
+
+  const handleOverlayPickVerseClick = (e) => {
+    e.stopPropagation()
+    openPickVerse()
+  }
+
   return (
     <div className="app">
-      <main className="verse-card">
+      <main className="verse-card verse-card-interactive" onClick={handleVerseCardClick}>
         {loading ? (
           <p className="verse-text">...</p>
         ) : verse ? (
@@ -128,14 +162,6 @@ function App() {
             </blockquote>
             <cite className="verse-reference">— {verse.reference}</cite>
             <div className="verse-actions">
-              <div className="verse-actions-group verse-actions-nav">
-                <button type="button" className="new-verse-btn" onClick={showNewVerse}>
-                  Another verse
-                </button>
-                <button type="button" className="new-verse-btn" onClick={openPickVerse}>
-                  Choose verse
-                </button>
-              </div>
               <div className="verse-actions-group verse-actions-memory">
                 <button
                   type="button"
@@ -199,11 +225,34 @@ function App() {
         </form>
       </dialog>
 
-      <ReloadPrompt />
+      {controlsOverlayOpen ? (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="controls-overlay-heading"
+          className="controls-overlay"
+          onClick={closeControlsOverlay}
+        >
+          <div className="controls-overlay-inner">
+            <h2 id="controls-overlay-heading" className="controls-overlay-visually-hidden">
+              Reading menu
+            </h2>
+            <p className="controls-overlay-build" aria-label="Build version">
+              {formatBuildLabel()}
+            </p>
+            <div className="controls-overlay-actions">
+              <button type="button" className="new-verse-btn" onClick={handleOverlayAnotherVerseClick}>
+                Another verse
+              </button>
+              <button type="button" className="new-verse-btn" onClick={handleOverlayPickVerseClick}>
+                Choose verse
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
 
-      <p className="build-label" aria-label="Build version">
-        {formatBuildLabel()}
-      </p>
+      <ReloadPrompt />
     </div>
   )
 }
