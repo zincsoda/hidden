@@ -30,12 +30,10 @@
   -webkit-box-decoration-break: clone;
 }
 
-.memory-blank {
+/* Slot uses visibility toggle so width matches hidden vs revealed */
+.memory-word-slot {
   display: inline-block;
   vertical-align: baseline;
-  height: 0.85em;
-  margin: 0 0.05em;
-  box-sizing: border-box;
 }
 
 .memory-word-visible {
