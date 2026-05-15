@@ -160,4 +160,43 @@ describe('App', () => {
     fireEvent.click(actions)
     expect(screen.queryByRole('dialog', { name: /reading menu/i })).not.toBeInTheDocument()
   })
+
+  it('reading menu toggle hides crowd mode controls on the verse card while keeping verses readable', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+
+    expect(screen.getByRole('button', { name: /hide 2/i })).toBeInTheDocument()
+
+    await user.click(screen.getByRole('blockquote'))
+    const crowdToggle = screen.getByRole('button', { name: /^hide crowd mode$/i })
+    expect(crowdToggle).toHaveAttribute('aria-pressed', 'true')
+
+    await user.click(crowdToggle)
+    expect(screen.queryByRole('button', { name: /hide 2/i })).not.toBeInTheDocument()
+    expect(screen.getByRole('blockquote')).toHaveTextContent(/Alpha Beta Gamma/)
+
+    await user.click(screen.getByRole('button', { name: /^hide reading menu/i }))
+    expect(screen.queryByRole('dialog', { name: /reading menu/i })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /hide 2/i })).not.toBeInTheDocument()
+  })
+
+  it('shows crowd mode again from overlay when toggled back on', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+
+    await user.click(screen.getByRole('blockquote'))
+    await user.click(screen.getByRole('button', { name: /^hide crowd mode$/i }))
+    await user.click(screen.getByRole('button', { name: /^hide reading menu/i }))
+
+    expect(screen.queryByRole('button', { name: /hide 2/i })).not.toBeInTheDocument()
+
+    await user.click(screen.getByRole('blockquote'))
+    await user.click(screen.getByRole('button', { name: /^show crowd mode$/i }))
+    expect(screen.getByRole('button', { name: /^hide crowd mode$/i })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    )
+    await user.click(screen.getByRole('button', { name: /^hide reading menu/i }))
+    expect(screen.getByRole('button', { name: /hide 2/i })).toBeInTheDocument()
+  })
 })
