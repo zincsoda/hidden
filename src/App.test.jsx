@@ -85,6 +85,24 @@ describe('App', () => {
     expect(screen.getByRole('button', { name: /show hidden words/i })).toBeDisabled()
   })
 
+  it('toggles the reading menu from a subtle top-right button', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+
+    const showBtn = screen.getByRole('button', { name: /show reading menu/i })
+    expect(showBtn).toHaveClass('controls-overlay-toggle')
+    expect(showBtn).toHaveAttribute('aria-expanded', 'false')
+
+    await user.click(showBtn)
+
+    expect(screen.getByRole('dialog', { name: /reading menu/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /hide reading menu/i })).toHaveAttribute('aria-expanded', 'true')
+
+    await user.click(screen.getByRole('button', { name: /hide reading menu/i }))
+    expect(screen.queryByRole('dialog', { name: /reading menu/i })).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /show reading menu/i })).toHaveAttribute('aria-expanded', 'false')
+  })
+
   it('opens an overlay from the verse area with build label and navigation; dismisses via tap on overlay or Escape', async () => {
     const user = userEvent.setup()
     render(<App />)

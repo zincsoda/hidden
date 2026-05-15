@@ -225,8 +225,21 @@ function App() {
         </form>
       </dialog>
 
+      {!loading && verse ? (
+        <button
+          type="button"
+          className="controls-overlay-toggle"
+          onClick={() => setControlsOverlayOpen((open) => !open)}
+          aria-expanded={controlsOverlayOpen}
+          aria-label={controlsOverlayOpen ? 'Hide reading menu' : 'Show reading menu'}
+        >
+          ⋯
+        </button>
+      ) : null}
+
       {controlsOverlayOpen ? (
         <div
+          id="controls-overlay"
           role="dialog"
           aria-modal="true"
           aria-labelledby="controls-overlay-heading"
