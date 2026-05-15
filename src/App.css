@@ -269,11 +269,18 @@
   inset: 0;
   z-index: 950;
   display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+}
+
+.controls-overlay-body {
+  flex: 1 1 auto;
+  display: flex;
   align-items: center;
   justify-content: center;
   padding: 1.5rem;
+  min-height: 0;
   box-sizing: border-box;
-  background: rgba(0, 0, 0, 0.55);
 }
 
 .controls-overlay-inner {
@@ -283,9 +290,12 @@
 }
 
 .controls-overlay-build {
-  margin: 0 0 0.85rem;
+  flex-shrink: 0;
+  margin: 0;
+  padding: 0.75rem 1.5rem max(1rem, env(safe-area-inset-bottom, 0px));
   font-size: 0.72rem;
   letter-spacing: 0.02em;
+  text-align: center;
   color: rgba(203, 213, 225, 0.8);
   font-style: normal;
   font-weight: 400;
