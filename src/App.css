@@ -215,6 +215,42 @@
   }
 }
 
+.controls-overlay-toggle {
+  position: fixed;
+  top: max(0.75rem, env(safe-area-inset-top, 0px));
+  right: max(0.75rem, env(safe-area-inset-right, 0px));
+  z-index: 960;
+  width: 2.25rem;
+  height: 2.25rem;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(203, 213, 225, 0.65);
+  font-size: 1.15rem;
+  line-height: 1;
+  letter-spacing: 0;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s, color 0.2s;
+  box-sizing: border-box;
+  user-select: none;
+}
+
+.controls-overlay-toggle:hover {
+  background: rgba(255, 255, 255, 0.09);
+  border-color: rgba(255, 255, 255, 0.18);
+  color: rgba(226, 232, 240, 0.85);
+}
+
+.controls-overlay-toggle:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.35);
+  outline-offset: 2px;
+}
+
 .controls-overlay-visually-hidden {
   position: absolute;
   width: 1px;
