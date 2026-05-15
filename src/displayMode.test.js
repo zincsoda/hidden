@@ -8,7 +8,20 @@ import {
 
 describe('displayMode', () => {
   beforeEach(() => {
-    localStorage.clear()
+    const store = Object.create(null)
+    vi.stubGlobal('localStorage', {
+      getItem: (key) => (Object.prototype.hasOwnProperty.call(store, key) ? store[key] : null),
+      setItem: (key, value) => {
+        store[key] = String(value)
+      },
+      removeItem: (key) => {
+        delete store[key]
+      },
+      clear: () => {
+        for (const key of Object.keys(store)) delete store[key]
+      },
+    })
+
     document.documentElement.classList.remove('is-large-display')
     vi.stubGlobal(
       'matchMedia',
