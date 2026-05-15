@@ -103,11 +103,13 @@ function App() {
                 <span key={i}>
                   {hiddenWordIndices.has(i) ? (
                     <span
-                      className="memory-hidden-word memory-word-slot"
+                      className="memory-word-slot"
                       aria-label={revealHiddenWords ? undefined : 'Hidden word'}
                     >
                       <span
-                        className={revealHiddenWords ? 'memory-word-visible' : undefined}
+                        className={
+                          revealHiddenWords ? 'memory-word-visible memory-word-revealed' : undefined
+                        }
                         style={{ visibility: revealHiddenWords ? 'visible' : 'hidden' }}
                         aria-hidden={revealHiddenWords ? undefined : true}
                       >

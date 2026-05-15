@@ -22,16 +22,7 @@
   font-style: italic;
 }
 
-.memory-hidden-word {
-  background: rgba(56, 189, 248, 0.18);
-  border-bottom: 2px solid rgba(56, 189, 248, 0.65);
-  border-radius: 2px;
-  padding: 0 0.1em;
-  box-decoration-break: clone;
-  -webkit-box-decoration-break: clone;
-}
-
-/* Slot uses visibility toggle so width matches hidden vs revealed */
+/* Slot uses visibility toggle so width matches hidden vs revealed; no fill while concealed */
 .memory-word-slot {
   display: inline-block;
   vertical-align: baseline;
@@ -39,6 +30,17 @@
 
 .memory-word-visible {
   display: inline;
+}
+
+/* Shown only when “Show hidden words” reveals the text */
+.memory-word-revealed {
+  background: rgba(251, 191, 36, 0.2);
+  border-bottom: 2px solid rgba(251, 191, 36, 0.75);
+  border-radius: 2px;
+  padding: 0 0.1em;
+  color: #fde68a;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
 }
 
 .verse-reference {

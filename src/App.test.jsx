@@ -33,14 +33,15 @@ describe('App', () => {
     })
   })
 
-  it('toggles hidden word text while keeping memory styling on the slot', async () => {
+  it('toggles hidden word text; highlight only when revealed, not on the empty slot', async () => {
     const user = userEvent.setup()
     render(<App />)
 
     await user.click(screen.getByRole('button', { name: /hide 2/i }))
 
     const hiddenSlot = screen.getByLabelText('Hidden word')
-    expect(hiddenSlot).toHaveClass('memory-hidden-word', 'memory-word-slot')
+    expect(hiddenSlot).toHaveClass('memory-word-slot')
+    expect(hiddenSlot.querySelector('.memory-word-revealed')).toBeNull()
     expect(hiddenSlot).toHaveTextContent('Alpha')
     expect(hiddenSlot.querySelector('.memory-word-visible')).toBeNull()
     expect(hiddenSlot.firstElementChild).toHaveStyle({ visibility: 'hidden' })
@@ -52,8 +53,8 @@ describe('App', () => {
     expect(screen.queryByLabelText('Hidden word')).not.toBeInTheDocument()
     const blockquote = screen.getByRole('blockquote')
     const revealedWord = within(blockquote).getByText('Alpha')
-    expect(revealedWord).toHaveClass('memory-word-visible')
-    expect(revealedWord.closest('.memory-hidden-word')).toHaveClass('memory-word-slot')
+    expect(revealedWord).toHaveClass('memory-word-visible', 'memory-word-revealed')
+    expect(revealedWord.closest('.memory-word-slot')).toBeTruthy()
     expect(screen.getByRole('button', { name: /hide word text/i })).toHaveAttribute('aria-pressed', 'true')
 
     await user.click(screen.getByRole('button', { name: /hide word text/i }))
@@ -74,6 +75,7 @@ describe('App', () => {
 
     const revealed = within(screen.getByRole('blockquote')).getByText('Alpha')
     expect(revealed.closest('.memory-word-slot')).toBeTruthy()
+    expect(revealed).toHaveClass('memory-word-revealed')
     expect(revealed).toHaveStyle({ visibility: 'visible' })
   })
 
