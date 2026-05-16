@@ -125,13 +125,13 @@ describe('App', () => {
     render(<App />)
 
     expect(screen.queryByLabelText('Build version')).not.toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: /another verse/i })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /inspire me/i })).not.toBeInTheDocument()
 
     await user.click(screen.getByRole('blockquote'))
     const dialog = screen.getByRole('dialog', { name: /reading menu/i })
     expect(dialog).toBeInTheDocument()
     expect(screen.getByLabelText('Build version')).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /another verse/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /inspire me/i })).toBeInTheDocument()
 
     await user.click(screen.getByLabelText('Build version'))
     expect(screen.queryByRole('dialog', { name: /reading menu/i })).not.toBeInTheDocument()
@@ -139,6 +139,21 @@ describe('App', () => {
     await user.click(screen.getByRole('blockquote'))
     await user.keyboard('{Escape}')
     expect(screen.queryByRole('dialog', { name: /reading menu/i })).not.toBeInTheDocument()
+  })
+
+  it('orders reading menu actions: Choose verse, then Inspire me, then Crowd mode', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+
+    await user.click(screen.getByRole('blockquote'))
+    const dialog = screen.getByRole('dialog', { name: /reading menu/i })
+    const actions = dialog.querySelector('.controls-overlay-actions')
+    expect(actions).toBeTruthy()
+    expect(actions.children.length).toBe(3)
+
+    expect(actions.children[0]).toHaveTextContent(/choose verse/i)
+    expect(actions.children[1]).toHaveTextContent(/inspire me/i)
+    expect(actions.children[2]).toHaveClass('controls-overlay-crowd-row')
   })
 
   it('uses a fully opaque reading menu backdrop and anchors the build label to the bottom of the overlay', async () => {

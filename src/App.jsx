@@ -260,11 +260,11 @@ function App() {
                 Reading menu
               </h2>
               <div className="controls-overlay-actions">
-                <button type="button" className="new-verse-btn" onClick={handleOverlayAnotherVerseClick}>
-                  Another verse
-                </button>
                 <button type="button" className="new-verse-btn" onClick={handleOverlayPickVerseClick}>
                   Choose verse
+                </button>
+                <button type="button" className="new-verse-btn" onClick={handleOverlayAnotherVerseClick}>
+                  Inspire me
                 </button>
                 <div
                   className="controls-overlay-crowd-row"
