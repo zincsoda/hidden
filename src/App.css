@@ -137,7 +137,7 @@
   padding: 0;
   background: #16161a;
   color: #e8e6e3;
-  max-width: min(100vw - 2rem, 22rem);
+  max-width: min(100vw - 2rem, 28rem);
 }
 
 .pick-dialog::backdrop {
@@ -147,6 +147,72 @@
 .pick-form {
   padding: 1.25rem 1.5rem;
   margin: 0;
+}
+
+.pick-form-list {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  max-height: min(70vh, 28rem);
+}
+
+.pick-verse-list {
+  list-style: none;
+  margin: 0 0 0.75rem;
+  padding: 0;
+  overflow-y: auto;
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.pick-verse-option {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.15rem;
+  padding: 0.65rem 0.75rem;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(0, 0, 0, 0.22);
+  color: #e8e6e3;
+  font-family: inherit;
+  font-size: 0.95rem;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+  box-sizing: border-box;
+}
+
+.pick-verse-option:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.pick-verse-option:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.35);
+  outline-offset: 2px;
+}
+
+.pick-verse-option-ref {
+  font-weight: 600;
+}
+
+.pick-verse-option-date {
+  font-size: 0.78rem;
+  color: #9ca3af;
+}
+
+.pick-dialog-actions-single {
+  justify-content: stretch;
+  margin-top: 0;
+}
+
+.pick-dialog-actions-single .pick-cancel {
+  width: 100%;
 }
 
 .pick-dialog-title {
@@ -161,6 +227,18 @@
   font-size: 0.85rem;
   color: #9ca3af;
   line-height: 1.45;
+}
+
+.pick-dialog-status {
+  margin: 0 0 0.75rem;
+  font-size: 0.85rem;
+  color: #9ca3af;
+  text-align: left;
+  line-height: 1.45;
+}
+
+.pick-dialog-status-error {
+  color: #fca5a5;
 }
 
 .pick-label {

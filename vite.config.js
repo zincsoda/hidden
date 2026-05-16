@@ -20,6 +20,16 @@ const buildInfo = {
 // BASE_PATH is set in CI for GitHub Pages (e.g. /random-bible-verse/)
 export default defineConfig({
   base: process.env.BASE_PATH || '/',
+  server: {
+    proxy: {
+      // Avoid browser CORS during local dev; production uses absolute MEMORY_VERSES_URL.
+      '/api/memory-verses': {
+        target: 'https://5ecvq3d6ri.execute-api.eu-west-2.amazonaws.com',
+        changeOrigin: true,
+        rewrite: () => '/api/sheet/memory_verses/ksr/',
+      },
+    },
+  },
   define: {
     __BUILD_COMMIT_COUNT__: JSON.stringify(buildInfo.commitCount),
     __BUILD_DEPLOYED_AT__: JSON.stringify(buildInfo.deployedAt),

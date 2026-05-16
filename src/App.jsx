@@ -1,5 +1,11 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react'
-import { getRandomVerse, findVerseByReference } from './verses'
+import { getRandomBuiltInVerse } from './verses'
+import { fetchMemoryVerses } from './memoryVersesApi'
+import {
+  readLastDisplayedVerse,
+  writeLastDisplayedVerse,
+  FALLBACK_DISPLAY_VERSE,
+} from './lastDisplayedVerse'
 import { pickRandomFromPool } from './memoryHelpers'
 import ReloadPrompt from './components/ReloadPrompt.jsx'
 import { formatBuildLabel } from './buildInfo.js'
@@ -18,15 +24,17 @@ function tokenizeVerse(text) {
 }
 
 function App() {
-  const [verse, setVerse] = useState(null)
-  const [loading, setLoading] = useState(true)
+  const [memoryVerses, setMemoryVerses] = useState([])
+  const [memoryVersesLoading, setMemoryVersesLoading] = useState(true)
+  const [memoryVersesError, setMemoryVersesError] = useState('')
+  const [verse, setVerse] = useState(
+    () => readLastDisplayedVerse() ?? FALLBACK_DISPLAY_VERSE,
+  )
   const [controlsOverlayOpen, setControlsOverlayOpen] = useState(false)
   /** When false, the three crowd / memory-practice buttons are hidden from the verse card. */
   const [crowdModeVisible, setCrowdModeVisible] = useState(false)
   const [hiddenWordIndices, setHiddenWordIndices] = useState(() => new Set())
   const [revealHiddenWords, setRevealHiddenWords] = useState(false)
-  const [pickInput, setPickInput] = useState('')
-  const [pickError, setPickError] = useState('')
   const pickDialogRef = useRef(null)
 
   const closeControlsOverlay = useCallback(() => {
@@ -34,45 +42,51 @@ function App() {
   }, [])
 
   const showNewVerse = () => {
-    setLoading(true)
-    setVerse(getRandomVerse())
-    setLoading(false)
+    const picked = getRandomBuiltInVerse(verse)
+    if (picked) setVerse(picked)
   }
 
   const openPickVerse = () => {
     closeControlsOverlay()
-    setPickError('')
-    setPickInput(verse?.reference ?? '')
     const d = pickDialogRef.current
     if (!d) return
     d.showModal()
-    requestAnimationFrame(() => {
-      const el = document.getElementById('pick-reference')
-      el?.focus()
-      el?.select()
-    })
   }
 
   const closePickVerse = () => {
     pickDialogRef.current?.close()
-    setPickError('')
   }
 
-  const submitPickVerse = (e) => {
-    e.preventDefault()
-    const found = findVerseByReference(pickInput)
-    if (!found) {
-      setPickError('No verse matches that reference in this list.')
-      return
-    }
-    setVerse(found)
+  const selectVerseFromList = (picked) => {
+    setVerse({ ...picked })
     closePickVerse()
-    setPickInput('')
   }
 
   useEffect(() => {
-    setVerse(getRandomVerse())
-    setLoading(false)
+    writeLastDisplayedVerse(verse)
+  }, [verse.reference, verse.text])
+
+  useEffect(() => {
+    let cancelled = false
+    ;(async () => {
+      setMemoryVersesLoading(true)
+      setMemoryVersesError('')
+      try {
+        const list = await fetchMemoryVerses()
+        if (cancelled) return
+        setMemoryVerses(list)
+      } catch (err) {
+        if (cancelled) return
+        const message = err instanceof Error ? err.message : 'Could not load verses.'
+        setMemoryVersesError(message)
+        setMemoryVerses([])
+      } finally {
+        if (!cancelled) setMemoryVersesLoading(false)
+      }
+    })()
+    return () => {
+      cancelled = true
+    }
   }, [])
 
   useEffect(() => {
@@ -116,7 +130,7 @@ function App() {
     const el = e.target instanceof Element ? e.target : null
     if (el?.closest('button')) return
     if (el?.closest('.verse-actions')) return
-    if (!verse || loading) return
+    if (!verse) return
     setControlsOverlayOpen(true)
   }
 
@@ -134,11 +148,8 @@ function App() {
   return (
     <div className="app">
       <main className="verse-card verse-card-interactive" onClick={handleVerseCardClick}>
-        {loading ? (
-          <p className="verse-text">...</p>
-        ) : verse ? (
-          <>
-            <blockquote className="verse-text">
+        <>
+          <blockquote className="verse-text">
               &ldquo;
               {verseWords.map((word, i) => (
                 <span key={i}>
@@ -197,43 +208,46 @@ function App() {
                 </div>
               </div>
             ) : null}
-          </>
-        ) : null}
+        </>
       </main>
 
-      <dialog ref={pickDialogRef} className="pick-dialog" onClose={() => setPickError('')}>
-        <form className="pick-form" onSubmit={submitPickVerse}>
-          <h2 className="pick-dialog-title">Go to verse</h2>
-          <p className="pick-dialog-hint">Enter a reference from the built-in list (e.g. John 3:16).</p>
-          <label className="pick-label" htmlFor="pick-reference">
-            Reference
-          </label>
-          <input
-            id="pick-reference"
-            type="text"
-            className="pick-input"
-            value={pickInput}
-            onChange={(e) => {
-              setPickInput(e.target.value)
-              setPickError('')
-            }}
-            autoComplete="off"
-            placeholder="John 3:16"
-          />
-          {pickError ? <p className="pick-error">{pickError}</p> : null}
-          <div className="pick-dialog-actions">
+      <dialog ref={pickDialogRef} className="pick-dialog" onClose={() => {}}>
+        <div className="pick-form pick-form-list">
+          <h2 className="pick-dialog-title" id="pick-dialog-heading">
+            Choose verse
+          </h2>
+          <p className="pick-dialog-hint">Pick a verse from your memory list (loaded from the sheet).</p>
+          {memoryVersesLoading ? (
+            <p className="pick-dialog-status">Loading memory list…</p>
+          ) : memoryVersesError ? (
+            <p className="pick-dialog-status pick-dialog-status-error">{memoryVersesError}</p>
+          ) : memoryVerses.length === 0 ? (
+            <p className="pick-dialog-status">No verses on the memory list.</p>
+          ) : (
+            <ul className="pick-verse-list" aria-labelledby="pick-dialog-heading">
+              {memoryVerses.map((v, i) => (
+                <li key={`${v.reference}-${v.date ?? ''}-${i}`}>
+                  <button
+                    type="button"
+                    className="pick-verse-option"
+                    onClick={() => selectVerseFromList(v)}
+                  >
+                    <span className="pick-verse-option-ref">{v.reference}</span>
+                    {v.date ? <span className="pick-verse-option-date">{v.date}</span> : null}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+          <div className="pick-dialog-actions pick-dialog-actions-single">
             <button type="button" className="new-verse-btn pick-cancel" onClick={closePickVerse}>
               Cancel
             </button>
-            <button type="submit" className="new-verse-btn pick-submit">
-              Show verse
-            </button>
           </div>
-        </form>
+        </div>
       </dialog>
 
-      {!loading && verse ? (
-        <button
+      <button
           type="button"
           className="controls-overlay-toggle"
           onClick={() => setControlsOverlayOpen((open) => !open)}
@@ -242,7 +256,6 @@ function App() {
         >
           ⋯
         </button>
-      ) : null}
 
       {controlsOverlayOpen ? (
         <div

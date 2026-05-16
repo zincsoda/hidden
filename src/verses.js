@@ -1,5 +1,5 @@
-// KJV verses – works offline, no API required
-export const verses = [
+// Built-in KJV verses — random “Inspire me” / first paint works offline.
+export const builtInVerses = [
   { reference: 'John 3:16', text: 'For God so loved the world, that he gave his only begotten Son, that whosoever believeth in him should not perish, but have everlasting life.' },
   { reference: 'Psalm 23:1', text: 'The Lord is my shepherd; I shall not want.' },
   { reference: 'Philippians 4:8', text: 'Finally, brothers and sisters, whatever is true, whatever is honorable, whatever is right, whatever is pure, whatever is lovely, whatever is commendable, if there is any excellence and if anything worthy of praise, think about these things.' },
@@ -33,22 +33,27 @@ export const verses = [
   { reference: 'Romans 15:13', text: 'Now the God of hope fill you with all joy and peace in believing, that ye may abound in hope, through the power of the Holy Ghost.' },
 ]
 
-export function getRandomVerse() {
-  return verses[Math.floor(Math.random() * verses.length)]
+function cloneVerse(v) {
+  return v ? { ...v } : null
 }
 
-/** Normalize a reference for comparison (case, dashes, whitespace). */
-export function normalizeReference(s) {
-  return String(s)
-    .trim()
-    .toLowerCase()
-    .replace(/[\u2013\u2014]/g, '-')
-    .replace(/\s+/g, ' ')
+/** Random verse from the built-in pool (offline). Prefer another row when several exist. */
+export function getRandomBuiltInVerse(current = null) {
+  return cloneVerse(pickRandomVerse(builtInVerses, current))
 }
 
-/** Find a verse in the local list by reference string, or null if not found. */
-export function findVerseByReference(query) {
-  const key = normalizeReference(query)
-  if (!key) return null
-  return verses.find((v) => normalizeReference(v.reference) === key) ?? null
+/**
+ * Pick a random verse from a loaded list, or null if empty.
+ * When `current` is set and other rows exist, prefers a different row so repeats are less likely.
+ */
+export function pickRandomVerse(verseList, current = null) {
+  if (!verseList?.length) return null
+  if (verseList.length === 1) return verseList[0]
+  const others = current
+    ? verseList.filter(
+        (v) => v.reference !== current.reference || v.text !== current.text,
+      )
+    : verseList
+  const pool = others.length > 0 ? others : verseList
+  return pool[Math.floor(Math.random() * pool.length)]
 }

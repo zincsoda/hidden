@@ -1,37 +1,52 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { render, screen, within, cleanup, fireEvent } from '@testing-library/react'
+import { render, screen, within, cleanup, fireEvent, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import App, { CONTROLS_OVERLAY_BACKDROP } from './App.jsx'
-import * as verses from './verses'
+import { fetchMemoryVerses } from './memoryVersesApi'
+import { LAST_DISPLAYED_VERSE_KEY } from './lastDisplayedVerse'
 import { pickRandomFromPool } from './memoryHelpers'
 
 vi.mock('./memoryHelpers', () => ({
   pickRandomFromPool: vi.fn(() => [0]),
 }))
 
-vi.mock('./verses', async (importOriginal) => {
+vi.mock('./memoryVersesApi', async (importOriginal) => {
   const actual = await importOriginal()
   return {
     ...actual,
-    getRandomVerse: vi.fn(() => ({
-      reference: 'Test 1:1',
-      text: 'Alpha Beta Gamma',
-    })),
+    fetchMemoryVerses: vi.fn(),
   }
 })
+
+vi.mock('./verses', () => ({
+  getRandomBuiltInVerse: vi.fn(() => ({
+    reference: 'Test 1:1',
+    text: 'Alpha Beta Gamma',
+  })),
+}))
 
 describe('App', () => {
   afterEach(() => {
     cleanup()
+    localStorage.clear()
   })
 
   beforeEach(() => {
+    localStorage.clear()
+    localStorage.setItem(
+      LAST_DISPLAYED_VERSE_KEY,
+      JSON.stringify({ reference: 'Test 1:1', text: 'Alpha Beta Gamma' }),
+    )
     vi.mocked(pickRandomFromPool).mockReturnValue([0])
-    vi.mocked(verses.getRandomVerse).mockReturnValue({
-      reference: 'Test 1:1',
-      text: 'Alpha Beta Gamma',
-    })
+    vi.mocked(fetchMemoryVerses).mockResolvedValue([
+      { reference: 'Test 1:1', text: 'Alpha Beta Gamma' },
+    ])
   })
+
+  async function renderAppReady() {
+    render(<App />)
+    await waitFor(() => expect(screen.getByRole('blockquote')).toBeInTheDocument())
+  }
 
   /** Turn on verse-card memory buttons (crowd mode), then close the reading menu. */
   async function enableCrowdModeFromMenu(user) {
@@ -45,7 +60,7 @@ describe('App', () => {
 
   it('toggles hidden word text; highlight only when revealed, not on the empty slot', async () => {
     const user = userEvent.setup()
-    render(<App />)
+    await renderAppReady()
 
     await enableCrowdModeFromMenu(user)
 
@@ -75,7 +90,7 @@ describe('App', () => {
 
   it('keeps hidden word slot width stable when toggling reveal (same word in flow, visibility only)', async () => {
     const user = userEvent.setup()
-    render(<App />)
+    await renderAppReady()
 
     await enableCrowdModeFromMenu(user)
 
@@ -95,7 +110,7 @@ describe('App', () => {
 
   it('disables the reveal toggle when no words are hidden', async () => {
     const user = userEvent.setup()
-    render(<App />)
+    await renderAppReady()
 
     await enableCrowdModeFromMenu(user)
 
@@ -104,7 +119,7 @@ describe('App', () => {
 
   it('toggles the reading menu from a subtle top-right button', async () => {
     const user = userEvent.setup()
-    render(<App />)
+    await renderAppReady()
 
     const showBtn = screen.getByRole('button', { name: /show reading menu/i })
     expect(showBtn).toHaveClass('controls-overlay-toggle')
@@ -122,7 +137,7 @@ describe('App', () => {
 
   it('opens an overlay from the verse area with build label and navigation; dismisses via tap on overlay or Escape', async () => {
     const user = userEvent.setup()
-    render(<App />)
+    await renderAppReady()
 
     expect(screen.queryByLabelText('Build version')).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: /inspire me/i })).not.toBeInTheDocument()
@@ -143,7 +158,7 @@ describe('App', () => {
 
   it('orders reading menu actions: Choose verse, then Inspire me, then Crowd mode', async () => {
     const user = userEvent.setup()
-    render(<App />)
+    await renderAppReady()
 
     await user.click(screen.getByRole('blockquote'))
     const dialog = screen.getByRole('dialog', { name: /reading menu/i })
@@ -158,7 +173,7 @@ describe('App', () => {
 
   it('uses a fully opaque reading menu backdrop and anchors the build label to the bottom of the overlay', async () => {
     const user = userEvent.setup()
-    render(<App />)
+    await renderAppReady()
 
     await user.click(screen.getByRole('blockquote'))
     const dialog = screen.getByRole('dialog', { name: /reading menu/i })
@@ -180,18 +195,20 @@ describe('App', () => {
 
   it('opens the pick dialog from Choose verse in the overlay and closes the overlay', async () => {
     const user = userEvent.setup()
-    render(<App />)
+    await renderAppReady()
 
     await user.click(screen.getByRole('blockquote'))
-    await user.click(screen.getByRole('button', { name: /choose verse/i }))
+    await user.click(screen.getByRole('button', { name: /^choose verse$/i }))
 
     expect(screen.queryByRole('heading', { name: /reading menu/i })).not.toBeInTheDocument()
-    expect(screen.getByRole('heading', { name: /go to verse/i })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: /^choose verse$/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /^test 1:1$/i })).toBeInTheDocument()
   })
 
   it('does not open the overlay when the event target is the memory controls strip wrapper', async () => {
     const user = userEvent.setup()
     const { container } = render(<App />)
+    await waitFor(() => expect(screen.getByRole('blockquote')).toBeInTheDocument())
     await enableCrowdModeFromMenu(user)
     const actions = container.querySelector('.verse-actions')
     expect(actions).toBeTruthy()
@@ -201,7 +218,7 @@ describe('App', () => {
 
   it('defaults crowd mode off and exposes an iOS-style switch in the reading menu', async () => {
     const user = userEvent.setup()
-    render(<App />)
+    await renderAppReady()
 
     expect(screen.queryByRole('button', { name: /hide 2/i })).not.toBeInTheDocument()
 
@@ -213,7 +230,7 @@ describe('App', () => {
 
   it('reading menu switch hides crowd mode controls on the verse card while keeping verses readable', async () => {
     const user = userEvent.setup()
-    render(<App />)
+    await renderAppReady()
 
     await enableCrowdModeFromMenu(user)
 
@@ -234,7 +251,7 @@ describe('App', () => {
 
   it('shows crowd mode again from overlay when toggled back on', async () => {
     const user = userEvent.setup()
-    render(<App />)
+    await renderAppReady()
 
     await enableCrowdModeFromMenu(user)
 
