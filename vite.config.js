@@ -38,7 +38,7 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'prompt',
-      includeAssets: ['vite.svg'],
+      includeAssets: ['icon.svg'],
       manifest: false,
       workbox: {
         cleanupOutdatedCaches: true,
