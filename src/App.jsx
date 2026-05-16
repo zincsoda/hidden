@@ -343,7 +343,7 @@ function App() {
                 aria-expanded={iosInstallOpen}
                 aria-controls={iosInstallOpen ? 'ios-install-instructions' : undefined}
               >
-                Add to Home Screen
+                Install on iOS
               </button>
               {iosInstallOpen ? (
                 <ol
