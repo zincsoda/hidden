@@ -414,6 +414,67 @@
   user-select: none;
 }
 
+.controls-overlay-install-btn {
+  flex-shrink: 0;
+  display: block;
+  margin: 0 auto;
+  padding: 0.35rem 0.75rem 0.15rem;
+  font-family: inherit;
+  font-size: 0.72rem;
+  letter-spacing: 0.02em;
+  text-align: center;
+  color: rgba(203, 213, 225, 0.8);
+  font-style: normal;
+  font-weight: 500;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+  box-sizing: border-box;
+  user-select: none;
+}
+
+.controls-overlay-install-btn:hover {
+  color: rgba(226, 232, 240, 0.95);
+}
+
+.controls-overlay-install-btn:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.35);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.controls-overlay-install-steps {
+  flex-shrink: 0;
+  margin: 0;
+  padding: 0.25rem 1.5rem 0.35rem;
+  max-width: min(22rem, calc(100% - 3rem));
+  margin-inline: auto;
+  font-size: 0.7rem;
+  line-height: 1.55;
+  letter-spacing: 0.02em;
+  text-align: left;
+  color: rgba(203, 213, 225, 0.88);
+  font-style: normal;
+  font-weight: 400;
+  user-select: none;
+}
+
+.controls-overlay-install-steps li {
+  margin: 0 0 0.45rem;
+  padding-left: 0.15rem;
+}
+
+.controls-overlay-install-steps li:last-child {
+  margin-bottom: 0;
+}
+
+.controls-overlay-install-steps strong {
+  font-weight: 600;
+  color: rgba(226, 232, 240, 0.95);
+}
+
 .controls-overlay-dedication {
   flex-shrink: 0;
   margin: 0;

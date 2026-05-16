@@ -9,6 +9,7 @@ import {
 import { pickRandomFromPool } from './memoryHelpers'
 import ReloadPrompt from './components/ReloadPrompt.jsx'
 import { formatBuildLabel } from './buildInfo.js'
+import { isIosDevice } from './iosDevice.js'
 import './App.css'
 
 const WORD_SPLIT = /\s+/
@@ -32,6 +33,8 @@ function App() {
   )
   const [controlsOverlayOpen, setControlsOverlayOpen] = useState(false)
   const [aboutOpen, setAboutOpen] = useState(false)
+  const [iosInstallOpen, setIosInstallOpen] = useState(false)
+  const iosUser = useMemo(() => isIosDevice(), [])
   /** When false, the three crowd / memory-practice buttons are hidden from the verse card. */
   const [crowdModeVisible, setCrowdModeVisible] = useState(false)
   const [hiddenWordIndices, setHiddenWordIndices] = useState(() => new Set())
@@ -105,7 +108,10 @@ function App() {
   }, [controlsOverlayOpen, closeControlsOverlay])
 
   useEffect(() => {
-    if (!controlsOverlayOpen) setAboutOpen(false)
+    if (!controlsOverlayOpen) {
+      setAboutOpen(false)
+      setIosInstallOpen(false)
+    }
   }, [controlsOverlayOpen])
 
   const verseWords = useMemo(() => (verse ? tokenizeVerse(verse.text) : []), [verse?.text])
@@ -324,6 +330,39 @@ function App() {
               Psalm 119:11 says I have hidden your word in my heart that I might not sin against you.
               The app is called &ldquo;hidden&rdquo; representing what we have hidden in our hearts.
             </p>
+          ) : null}
+          {iosUser ? (
+            <>
+              <button
+                type="button"
+                className="controls-overlay-install-btn"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setIosInstallOpen((open) => !open)
+                }}
+                aria-expanded={iosInstallOpen}
+                aria-controls={iosInstallOpen ? 'ios-install-instructions' : undefined}
+              >
+                Add to Home Screen
+              </button>
+              {iosInstallOpen ? (
+                <ol
+                  id="ios-install-instructions"
+                  className="controls-overlay-install-steps"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <li>
+                    In Safari, tap the Share button in the toolbar (square with an arrow pointing up).
+                  </li>
+                  <li>
+                    Scroll the share sheet and tap <strong>Add to Home Screen</strong>.
+                  </li>
+                  <li>
+                    Tap <strong>Add</strong> to finish.
+                  </li>
+                </ol>
+              ) : null}
+            </>
           ) : null}
           <p className="controls-overlay-dedication">Made with ❤️ for KSR</p>
           <p className="controls-overlay-build" aria-label="Build version">

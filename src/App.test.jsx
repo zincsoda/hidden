@@ -5,9 +5,14 @@ import App, { CONTROLS_OVERLAY_BACKDROP } from './App.jsx'
 import { fetchMemoryVerses } from './memoryVersesApi'
 import { LAST_DISPLAYED_VERSE_KEY } from './lastDisplayedVerse'
 import { pickRandomFromPool } from './memoryHelpers'
+import { isIosDevice } from './iosDevice.js'
 
 vi.mock('./memoryHelpers', () => ({
   pickRandomFromPool: vi.fn(() => [0]),
+}))
+
+vi.mock('./iosDevice', () => ({
+  isIosDevice: vi.fn(() => false),
 }))
 
 vi.mock('./memoryVersesApi', async (importOriginal) => {
@@ -41,12 +46,57 @@ describe('App', () => {
     vi.mocked(fetchMemoryVerses).mockResolvedValue([
       { reference: 'Test 1:1', text: 'Alpha Beta Gamma' },
     ])
+    vi.mocked(isIosDevice).mockReturnValue(false)
   })
 
   async function renderAppReady() {
     render(<App />)
     await waitFor(() => expect(screen.getByRole('blockquote')).toBeInTheDocument())
   }
+
+  it('shows iOS add-to-home instructions above the dedication when enabled', async () => {
+    vi.mocked(isIosDevice).mockReturnValue(true)
+    const user = userEvent.setup()
+    await renderAppReady()
+
+    await user.click(screen.getByRole('blockquote'))
+    expect(screen.getByRole('button', { name: /^add to home screen$/i })).toBeInTheDocument()
+
+    expect(screen.queryByRole('list')).not.toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: /^add to home screen$/i }))
+    const list = screen.getByRole('list')
+    expect(list).toHaveAttribute('id', 'ios-install-instructions')
+    expect(list).toHaveTextContent(/share button/i)
+    expect(list).toHaveTextContent(/add to home screen/i)
+
+    await user.click(screen.getByRole('button', { name: /^add to home screen$/i }))
+    expect(screen.queryByRole('list')).not.toBeInTheDocument()
+  })
+
+  it('hides iOS add-to-home control on non-iOS devices', async () => {
+    vi.mocked(isIosDevice).mockReturnValue(false)
+    const user = userEvent.setup()
+    await renderAppReady()
+
+    await user.click(screen.getByRole('blockquote'))
+    expect(screen.queryByRole('button', { name: /^add to home screen$/i })).not.toBeInTheDocument()
+  })
+
+  it('clears iOS install instructions when the reading menu closes', async () => {
+    vi.mocked(isIosDevice).mockReturnValue(true)
+    const user = userEvent.setup()
+    await renderAppReady()
+
+    await user.click(screen.getByRole('blockquote'))
+    await user.click(screen.getByRole('button', { name: /^add to home screen$/i }))
+    expect(screen.getByRole('list')).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: /hide reading menu/i }))
+    expect(screen.queryByRole('list')).not.toBeInTheDocument()
+
+    await user.click(screen.getByRole('blockquote'))
+    expect(screen.queryByRole('list')).not.toBeInTheDocument()
+  })
 
   /** Turn on verse-card memory buttons (crowd mode), then close the reading menu. */
   async function enableCrowdModeFromMenu(user) {
