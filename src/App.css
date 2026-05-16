@@ -13,6 +13,17 @@
   text-align: center;
 }
 
+.letter-cue-line {
+  font-family: var(--verse-font);
+  font-size: calc(clamp(1rem, 2.2vw, 1.5rem) * var(--verse-font-scale, 1));
+  line-height: 1.4;
+  color: #fde68a;
+  letter-spacing: 0.12em;
+  margin: 0 0 1rem;
+  font-weight: 600;
+  text-rendering: optimizeLegibility;
+}
+
 .verse-text {
   font-family: var(--verse-font);
   font-size: calc(clamp(1.125rem, 2.5vw, 1.75rem) * var(--verse-font-scale, 1));
@@ -22,7 +33,49 @@
   font-weight: 500;
   font-style: normal;
   letter-spacing: 0.01em;
+  text-align: center;
   text-rendering: optimizeLegibility;
+}
+
+/* Keep word flow natural when each letter is its own control (no justify-like gaps). */
+.verse-text--letter-cue .verse-word {
+  display: inline;
+}
+
+.verse-letter-btn {
+  display: inline;
+  margin: 0;
+  padding: 0;
+  border: none;
+  border-radius: 3px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-weight: inherit;
+  letter-spacing: inherit;
+  line-height: inherit;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  vertical-align: baseline;
+  -webkit-tap-highlight-color: transparent;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+
+.verse-letter-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.verse-letter-btn:focus-visible {
+  outline: 2px solid rgba(251, 191, 36, 0.65);
+  outline-offset: 1px;
+}
+
+.verse-letter-btn--selected {
+  background: rgba(251, 191, 36, 0.22);
+  color: #fde68a;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
 }
 
 /* Slot uses visibility toggle so width matches hidden vs revealed; no fill while concealed */

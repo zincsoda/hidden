@@ -6,6 +6,7 @@ import { fetchMemoryVerses } from './memoryVersesApi'
 import { LAST_DISPLAYED_VERSE_KEY } from './lastDisplayedVerse'
 import { pickRandomFromPool } from './memoryHelpers'
 import { isIosDevice } from './iosDevice.js'
+import { getRandomBuiltInVerse } from './verses'
 
 vi.mock('./memoryHelpers', () => ({
   pickRandomFromPool: vi.fn(() => [0]),
@@ -47,6 +48,10 @@ describe('App', () => {
       { reference: 'Test 1:1', text: 'Alpha Beta Gamma' },
     ])
     vi.mocked(isIosDevice).mockReturnValue(false)
+    vi.mocked(getRandomBuiltInVerse).mockReturnValue({
+      reference: 'Test 1:1',
+      text: 'Alpha Beta Gamma',
+    })
   })
 
   async function renderAppReady() {
@@ -216,7 +221,7 @@ describe('App', () => {
     expect(screen.queryByRole('dialog', { name: /reading menu/i })).not.toBeInTheDocument()
   })
 
-  it('orders reading menu actions: Memory Verses, Inspire me, Text size, then Crowd mode', async () => {
+  it('orders reading menu actions: Memory Verses, Inspire me, Text size, Letter cue, then Crowd mode', async () => {
     const user = userEvent.setup()
     await renderAppReady()
 
@@ -224,14 +229,16 @@ describe('App', () => {
     const dialog = screen.getByRole('dialog', { name: /reading menu/i })
     const actions = dialog.querySelector('.controls-overlay-actions')
     expect(actions).toBeTruthy()
-    expect(actions.children.length).toBe(4)
+    expect(actions.children.length).toBe(5)
 
     expect(actions.children[0]).toHaveTextContent(/memory verses/i)
     expect(actions.children[1]).toHaveTextContent(/inspire me/i)
     expect(actions.children[2]).toHaveClass('controls-overlay-setting-row')
     expect(actions.children[2]).toHaveTextContent(/text size/i)
     expect(actions.children[3]).toHaveClass('controls-overlay-setting-row')
-    expect(actions.children[3]).toHaveTextContent(/crowd mode/i)
+    expect(actions.children[3]).toHaveTextContent(/letter cue method/i)
+    expect(actions.children[4]).toHaveClass('controls-overlay-setting-row')
+    expect(actions.children[4]).toHaveTextContent(/crowd mode/i)
   })
 
   it('adjusts verse text size from the reading menu and persists the choice', async () => {
@@ -327,6 +334,69 @@ describe('App', () => {
     await user.click(screen.getByRole('button', { name: /^hide reading menu/i }))
     expect(screen.queryByRole('dialog', { name: /reading menu/i })).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: /hide 2/i })).not.toBeInTheDocument()
+  })
+
+  /** Turn on letter cue mode from the reading menu, then close it. */
+  async function enableLetterCueModeFromMenu(user) {
+    await user.click(screen.getByRole('blockquote'))
+    const letterCueSwitch = screen.getByRole('switch', { name: /^letter cue method$/i })
+    if (letterCueSwitch.getAttribute('aria-checked') !== 'true') {
+      await user.click(letterCueSwitch)
+    }
+    await user.click(screen.getByRole('button', { name: /hide reading menu/i }))
+  }
+
+  it('lets you pick letter cues and shows them in a line above the verse', async () => {
+    const user = userEvent.setup()
+    await renderAppReady()
+
+    await enableLetterCueModeFromMenu(user)
+
+    const blockquote = screen.getByRole('blockquote')
+    const alphaA = within(blockquote).getByRole('button', { name: 'Add letter cue A' })
+    await user.click(alphaA)
+    expect(alphaA).toHaveAttribute('aria-pressed', 'true')
+
+    const betaB = within(blockquote).getByRole('button', { name: 'Add letter cue B' })
+    await user.click(betaB)
+
+    expect(screen.getByLabelText('Letter cues')).toHaveTextContent('A B')
+
+    await user.click(
+      within(blockquote).getByRole('button', { name: 'Remove letter cue A' }),
+    )
+    expect(screen.getByLabelText('Letter cues')).toHaveTextContent('B')
+  })
+
+  it('does not open the reading menu when tapping a letter cue button', async () => {
+    const user = userEvent.setup()
+    await renderAppReady()
+
+    await enableLetterCueModeFromMenu(user)
+    await user.click(
+      within(screen.getByRole('blockquote')).getByRole('button', { name: 'Add letter cue A' }),
+    )
+    expect(screen.queryByRole('dialog', { name: /reading menu/i })).not.toBeInTheDocument()
+  })
+
+  it('clears letter cues when the verse changes', async () => {
+    vi.mocked(getRandomBuiltInVerse).mockReturnValue({
+      reference: 'Test 2:2',
+      text: 'Delta Echo',
+    })
+    const user = userEvent.setup()
+    await renderAppReady()
+
+    await enableLetterCueModeFromMenu(user)
+    await user.click(
+      within(screen.getByRole('blockquote')).getByRole('button', { name: 'Add letter cue A' }),
+    )
+    expect(screen.getByLabelText('Letter cues')).toHaveTextContent('A')
+
+    await user.click(screen.getByRole('button', { name: /show reading menu/i }))
+    await user.click(screen.getByRole('button', { name: /inspire me/i }))
+    await waitFor(() => expect(screen.queryByLabelText('Letter cues')).not.toBeInTheDocument())
+    expect(screen.getByRole('blockquote')).toHaveTextContent(/Delta Echo/)
   })
 
   it('shows crowd mode again from overlay when toggled back on', async () => {

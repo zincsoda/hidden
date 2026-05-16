@@ -15,6 +15,12 @@ import {
   bumpVerseFontScale,
   VERSE_FONT_SCALE_STEPS,
 } from './verseFontSize.js'
+import {
+  buildLetterCueLine,
+  getWordCharRanges,
+  isSelectableLetter,
+  toggleLetterIndex,
+} from './letterCue.js'
 import './App.css'
 
 const WORD_SPLIT = /\s+/
@@ -47,6 +53,8 @@ function App() {
   )
   const [hiddenWordIndices, setHiddenWordIndices] = useState(() => new Set())
   const [revealHiddenWords, setRevealHiddenWords] = useState(false)
+  const [letterCueModeEnabled, setLetterCueModeEnabled] = useState(false)
+  const [selectedLetterIndices, setSelectedLetterIndices] = useState(() => new Set())
   const pickDialogRef = useRef(null)
 
   const closeControlsOverlay = useCallback(() => {
@@ -109,6 +117,7 @@ function App() {
   useEffect(() => {
     setHiddenWordIndices(new Set())
     setRevealHiddenWords(false)
+    setSelectedLetterIndices(new Set())
   }, [verse?.reference, verse?.text])
 
   useEffect(() => {
@@ -128,6 +137,19 @@ function App() {
   }, [controlsOverlayOpen])
 
   const verseWords = useMemo(() => (verse ? tokenizeVerse(verse.text) : []), [verse?.text])
+  const verseText = verse?.text ?? ''
+  const wordCharRanges = useMemo(
+    () => getWordCharRanges(verseText, verseWords),
+    [verseText, verseWords],
+  )
+  const letterCueLine = useMemo(
+    () => buildLetterCueLine(verseText, selectedLetterIndices),
+    [verseText, selectedLetterIndices],
+  )
+
+  const toggleLetterCue = useCallback((charIndex) => {
+    setSelectedLetterIndices((prev) => toggleLetterIndex(prev, charIndex))
+  }, [])
 
   const hideMoreWords = useCallback(() => {
     setHiddenWordIndices((prev) => {
@@ -154,8 +176,48 @@ function App() {
     const el = e.target instanceof Element ? e.target : null
     if (el?.closest('button')) return
     if (el?.closest('.verse-actions')) return
+    if (el?.closest('.verse-letter-btn')) return
     if (!verse) return
     setControlsOverlayOpen(true)
+  }
+
+  const renderWordLetters = (word, wordIndex) => {
+    const range = wordCharRanges[wordIndex]
+    if (!range) return word
+    return [...word].map((ch, ci) => {
+      const charIndex = range.start + ci
+      if (!isSelectableLetter(ch)) {
+        return <span key={charIndex}>{ch}</span>
+      }
+      const selected = selectedLetterIndices.has(charIndex)
+      return (
+        <span
+          key={charIndex}
+          role="button"
+          tabIndex={0}
+          className={`verse-letter-btn${selected ? ' verse-letter-btn--selected' : ''}`}
+          onClick={(e) => {
+            e.stopPropagation()
+            toggleLetterCue(charIndex)
+          }}
+          onKeyDown={(e) => {
+            if (e.key !== 'Enter' && e.key !== ' ') return
+            e.preventDefault()
+            e.stopPropagation()
+            toggleLetterCue(charIndex)
+          }}
+          aria-pressed={selected}
+          aria-label={`${selected ? 'Remove' : 'Add'} letter cue ${ch}`}
+        >
+          {ch}
+        </span>
+      )
+    })
+  }
+
+  const renderWordContent = (word, wordIndex) => {
+    if (letterCueModeEnabled) return renderWordLetters(word, wordIndex)
+    return word
   }
 
   const handleOverlayAnotherVerseClick = (e) => {
@@ -173,10 +235,17 @@ function App() {
     <div className="app">
       <main className="verse-card verse-card-interactive" onClick={handleVerseCardClick}>
         <>
-          <blockquote className="verse-text">
+          {letterCueModeEnabled && letterCueLine ? (
+            <p className="letter-cue-line" aria-live="polite" aria-label="Letter cues">
+              {letterCueLine}
+            </p>
+          ) : null}
+          <blockquote
+            className={`verse-text${letterCueModeEnabled ? ' verse-text--letter-cue' : ''}`}
+          >
               &ldquo;
               {verseWords.map((word, i) => (
-                <span key={i}>
+                <span key={i} className="verse-word">
                   {hiddenWordIndices.has(i) ? (
                     <span
                       className="memory-word-slot"
@@ -193,7 +262,7 @@ function App() {
                       </span>
                     </span>
                   ) : (
-                    word
+                    renderWordContent(word, i)
                   )}
                   {i < verseWords.length - 1 ? ' ' : ''}
                 </span>
@@ -337,6 +406,24 @@ function App() {
                       +
                     </button>
                   </div>
+                </div>
+                <div
+                  className="controls-overlay-setting-row"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <span className="controls-overlay-setting-label" id="letter-cue-label">
+                    Letter cue method
+                  </span>
+                  <button
+                    type="button"
+                    className="ios-switch"
+                    role="switch"
+                    aria-checked={letterCueModeEnabled}
+                    aria-labelledby="letter-cue-label"
+                    onClick={() => setLetterCueModeEnabled((v) => !v)}
+                  >
+                    <span className="ios-switch-thumb" aria-hidden="true" />
+                  </button>
                 </div>
                 <div
                   className="controls-overlay-setting-row"
