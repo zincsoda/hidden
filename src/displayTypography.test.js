@@ -26,6 +26,11 @@ describe('display typography for large / TV viewports', () => {
     expect(mirroredBlock).toMatch(/var\(--display-vmin,\s*1vmin\)/)
   })
 
+  it('scales verse text with --verse-font-scale for user-adjustable size', () => {
+    expect(appCss).toMatch(/\.verse-text\s*\{[\s\S]*var\(--verse-font-scale,\s*1\)/)
+    expect(appCss).toMatch(/\.verse-reference\s*\{[\s\S]*var\(--verse-font-scale,\s*1\)/)
+  })
+
   it('uses Source Sans 3 for verse text (readable sans at signage distance)', () => {
     const indexCss = readFileSync(join(__dirname, 'index.css'), 'utf8')
     expect(indexCss).toMatch(/--verse-font:[\s\S]*Source Sans 3/)

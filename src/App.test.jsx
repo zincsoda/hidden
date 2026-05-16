@@ -216,7 +216,7 @@ describe('App', () => {
     expect(screen.queryByRole('dialog', { name: /reading menu/i })).not.toBeInTheDocument()
   })
 
-  it('orders reading menu actions: Memory Verses, then Inspire me, then Crowd mode', async () => {
+  it('orders reading menu actions: Memory Verses, Inspire me, Text size, then Crowd mode', async () => {
     const user = userEvent.setup()
     await renderAppReady()
 
@@ -224,11 +224,31 @@ describe('App', () => {
     const dialog = screen.getByRole('dialog', { name: /reading menu/i })
     const actions = dialog.querySelector('.controls-overlay-actions')
     expect(actions).toBeTruthy()
-    expect(actions.children.length).toBe(3)
+    expect(actions.children.length).toBe(4)
 
     expect(actions.children[0]).toHaveTextContent(/memory verses/i)
     expect(actions.children[1]).toHaveTextContent(/inspire me/i)
-    expect(actions.children[2]).toHaveClass('controls-overlay-crowd-row')
+    expect(actions.children[2]).toHaveClass('controls-overlay-setting-row')
+    expect(actions.children[2]).toHaveTextContent(/text size/i)
+    expect(actions.children[3]).toHaveClass('controls-overlay-setting-row')
+    expect(actions.children[3]).toHaveTextContent(/crowd mode/i)
+  })
+
+  it('adjusts verse text size from the reading menu and persists the choice', async () => {
+    const user = userEvent.setup()
+    await renderAppReady()
+
+    await user.click(screen.getByRole('blockquote'))
+    expect(screen.getByText('Default')).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: /^larger text$/i }))
+    expect(screen.getByText('Large')).toBeInTheDocument()
+    expect(document.documentElement.style.getPropertyValue('--verse-font-scale')).toBe('1.15')
+    expect(localStorage.getItem('verseFontScale')).toBe('3')
+
+    await user.click(screen.getByRole('button', { name: /^hide reading menu/i }))
+    await user.click(screen.getByRole('blockquote'))
+    expect(screen.getByText('Large')).toBeInTheDocument()
   })
 
   it('uses a fully opaque reading menu backdrop and anchors the build label to the bottom of the overlay', async () => {

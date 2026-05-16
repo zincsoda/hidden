@@ -15,7 +15,7 @@
 
 .verse-text {
   font-family: var(--verse-font);
-  font-size: clamp(1.125rem, 2.5vw, 1.75rem);
+  font-size: calc(clamp(1.125rem, 2.5vw, 1.75rem) * var(--verse-font-scale, 1));
   line-height: 1.55;
   color: #e8e6e3;
   margin: 0 0 1.5rem;
@@ -48,7 +48,7 @@
 
 .verse-reference {
   display: block;
-  font-size: clamp(0.95rem, 2vw, 1.125rem);
+  font-size: calc(clamp(0.95rem, 2vw, 1.125rem) * var(--verse-font-scale, 1));
   color: #9ca3af;
   font-style: normal;
   margin-bottom: 2rem;
@@ -507,7 +507,7 @@
   gap: 0.5rem;
 }
 
-.controls-overlay-crowd-row {
+.controls-overlay-setting-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -518,11 +518,64 @@
   box-sizing: border-box;
 }
 
-.controls-overlay-crowd-label {
+.controls-overlay-setting-label {
   font-size: 0.9rem;
   font-weight: 500;
   color: #e8e6e3;
   text-align: left;
+  user-select: none;
+}
+
+.controls-overlay-font-stepper {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex-shrink: 0;
+}
+
+.controls-overlay-font-step-btn {
+  width: 2.25rem;
+  height: 2.25rem;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: inherit;
+  font-size: 1.2rem;
+  line-height: 1;
+  font-weight: 500;
+  color: #e8e6e3;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s, opacity 0.2s;
+  box-sizing: border-box;
+  user-select: none;
+}
+
+.controls-overlay-font-step-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+.controls-overlay-font-step-btn:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.4);
+  outline-offset: 2px;
+}
+
+.controls-overlay-font-step-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.controls-overlay-font-step-value {
+  min-width: 4.75rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: rgba(203, 213, 225, 0.9);
+  text-align: center;
   user-select: none;
 }
 
@@ -599,7 +652,7 @@
 
   .verse-text {
     font-weight: 600;
-    font-size: clamp(2rem, 3.8vmin + 1rem, 5.5rem);
+    font-size: calc(clamp(2rem, 3.8vmin + 1rem, 5.5rem) * var(--verse-font-scale, 1));
     line-height: 1.35;
     letter-spacing: 0.02em;
     text-rendering: optimizeLegibility;
@@ -607,7 +660,7 @@
   }
 
   .verse-reference {
-    font-size: clamp(1.35rem, 2.4vmin + 0.35rem, 2.75rem);
+    font-size: calc(clamp(1.35rem, 2.4vmin + 0.35rem, 2.75rem) * var(--verse-font-scale, 1));
     margin-bottom: clamp(1.5rem, 3vmin, 3rem);
   }
 
@@ -625,7 +678,9 @@ html.is-large-display .verse-card {
 html.is-large-display .verse-text {
   font-weight: 600;
   /* --display-vmin is screen-based when mirrored; otherwise matches vmin */
-  font-size: clamp(2rem, calc(3.8 * var(--display-vmin, 1vmin) + 1rem), 5.5rem);
+  font-size: calc(
+    clamp(2rem, calc(3.8 * var(--display-vmin, 1vmin) + 1rem), 5.5rem) * var(--verse-font-scale, 1)
+  );
   line-height: 1.35;
   letter-spacing: 0.02em;
   text-rendering: optimizeLegibility;
@@ -633,7 +688,10 @@ html.is-large-display .verse-text {
 }
 
 html.is-large-display .verse-reference {
-  font-size: clamp(1.35rem, calc(2.4 * var(--display-vmin, 1vmin) + 0.35rem), 2.75rem);
+  font-size: calc(
+    clamp(1.35rem, calc(2.4 * var(--display-vmin, 1vmin) + 0.35rem), 2.75rem) *
+      var(--verse-font-scale, 1)
+  );
   margin-bottom: clamp(1.5rem, calc(3 * var(--display-vmin, 1vmin)), 3rem);
 }
 

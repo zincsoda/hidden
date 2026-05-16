@@ -10,6 +10,11 @@ import { pickRandomFromPool } from './memoryHelpers'
 import ReloadPrompt from './components/ReloadPrompt.jsx'
 import { formatBuildLabel } from './buildInfo.js'
 import { isIosDevice } from './iosDevice.js'
+import {
+  readVerseFontScaleIndex,
+  bumpVerseFontScale,
+  VERSE_FONT_SCALE_STEPS,
+} from './verseFontSize.js'
 import './App.css'
 
 const WORD_SPLIT = /\s+/
@@ -37,12 +42,20 @@ function App() {
   const iosUser = useMemo(() => isIosDevice(), [])
   /** When false, the three crowd / memory-practice buttons are hidden from the verse card. */
   const [crowdModeVisible, setCrowdModeVisible] = useState(false)
+  const [verseFontScaleIndex, setVerseFontScaleIndexState] = useState(() =>
+    readVerseFontScaleIndex(),
+  )
   const [hiddenWordIndices, setHiddenWordIndices] = useState(() => new Set())
   const [revealHiddenWords, setRevealHiddenWords] = useState(false)
   const pickDialogRef = useRef(null)
 
   const closeControlsOverlay = useCallback(() => {
     setControlsOverlayOpen(false)
+  }, [])
+
+  const adjustVerseFontScale = useCallback((delta) => {
+    const next = bumpVerseFontScale(delta)
+    setVerseFontScaleIndexState(next)
   }, [])
 
   const showNewVerse = () => {
@@ -291,10 +304,45 @@ function App() {
                   Inspire me
                 </button>
                 <div
-                  className="controls-overlay-crowd-row"
+                  className="controls-overlay-setting-row"
                   onClick={(e) => e.stopPropagation()}
                 >
-                  <span className="controls-overlay-crowd-label" id="crowd-mode-label">
+                  <span className="controls-overlay-setting-label" id="font-size-label">
+                    Text size
+                  </span>
+                  <div
+                    className="controls-overlay-font-stepper"
+                    role="group"
+                    aria-labelledby="font-size-label"
+                  >
+                    <button
+                      type="button"
+                      className="controls-overlay-font-step-btn"
+                      aria-label="Smaller text"
+                      disabled={verseFontScaleIndex <= 0}
+                      onClick={() => adjustVerseFontScale(-1)}
+                    >
+                      −
+                    </button>
+                    <span className="controls-overlay-font-step-value" aria-live="polite">
+                      {VERSE_FONT_SCALE_STEPS[verseFontScaleIndex].label}
+                    </span>
+                    <button
+                      type="button"
+                      className="controls-overlay-font-step-btn"
+                      aria-label="Larger text"
+                      disabled={verseFontScaleIndex >= VERSE_FONT_SCALE_STEPS.length - 1}
+                      onClick={() => adjustVerseFontScale(1)}
+                    >
+                      +
+                    </button>
+                  </div>
+                </div>
+                <div
+                  className="controls-overlay-setting-row"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <span className="controls-overlay-setting-label" id="crowd-mode-label">
                     Crowd mode
                   </span>
                   <button

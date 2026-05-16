@@ -9,9 +9,11 @@ import {
   readDisplayModeFromUrl,
   subscribeLargeDisplay,
 } from './displayMode.js'
+import { applyVerseFontScale } from './verseFontSize.js'
 
 readDisplayModeFromUrl()
 applyLargeDisplayClass()
+applyVerseFontScale()
 subscribeLargeDisplay(() => {})
 
 createRoot(document.getElementById('root')).render(
