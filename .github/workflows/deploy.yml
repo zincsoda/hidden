@@ -1,4 +1,4 @@
-# Live at https://zincsoda.github.io/random-bible-verse/
+# https://hidden.swlabs.cc/ and https://zincsoda.github.io/random-bible-verse/
 name: Deploy to GitHub Pages
 
 on:
@@ -34,8 +34,6 @@ jobs:
 
       - name: Build
         run: npm run build
-        env:
-          BASE_PATH: /${{ github.event.repository.name }}/
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v4

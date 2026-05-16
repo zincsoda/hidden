@@ -29,7 +29,7 @@ The service worker is only registered in production, so the app can be installed
 2. Under **Build and deployment**, set **Source** to **GitHub Actions**.
 3. Push the `main` branch (or your default branch). The workflow builds and deploys automatically.
 
-The site will be at `https://<your-username>.github.io/random-bible-verse/`.
+The site is at [https://hidden.swlabs.cc/](https://hidden.swlabs.cc/) and [https://zincsoda.github.io/random-bible-verse/](https://zincsoda.github.io/random-bible-verse/). The build uses a relative base (`./`) so one deploy works at both URLs.
 
 If your default branch is not `main`, edit `.github/workflows/deploy.yml` and change `branches: [main]` to your branch (e.g. `master`).
 

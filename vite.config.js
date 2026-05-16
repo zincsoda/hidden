@@ -17,9 +17,9 @@ const buildInfo = {
 }
 
 // https://vite.dev/config/
-// BASE_PATH is set in CI for GitHub Pages (e.g. /random-bible-verse/)
+// Relative base works at site root (custom domain) and /repo-name/ (project Pages)
 export default defineConfig({
-  base: process.env.BASE_PATH || '/',
+  base: process.env.BASE_PATH || './',
   server: {
     proxy: {
       // Avoid browser CORS during local dev; production uses absolute MEMORY_VERSES_URL.
