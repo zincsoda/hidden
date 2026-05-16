@@ -16,7 +16,6 @@ export function formatBuildLabel() {
     year: 'numeric',
     hour: '2-digit',
     minute: '2-digit',
-    timeZone: 'UTC',
     timeZoneName: 'short',
   }).format(new Date(deployedAt))
   return `v${count} · ${when}`
