@@ -156,7 +156,7 @@ describe('App', () => {
     expect(screen.queryByRole('dialog', { name: /reading menu/i })).not.toBeInTheDocument()
   })
 
-  it('orders reading menu actions: Choose verse, then Inspire me, then Crowd mode', async () => {
+  it('orders reading menu actions: Memory Verses, then Inspire me, then Crowd mode', async () => {
     const user = userEvent.setup()
     await renderAppReady()
 
@@ -166,7 +166,7 @@ describe('App', () => {
     expect(actions).toBeTruthy()
     expect(actions.children.length).toBe(3)
 
-    expect(actions.children[0]).toHaveTextContent(/choose verse/i)
+    expect(actions.children[0]).toHaveTextContent(/memory verses/i)
     expect(actions.children[1]).toHaveTextContent(/inspire me/i)
     expect(actions.children[2]).toHaveClass('controls-overlay-crowd-row')
   })
@@ -193,15 +193,15 @@ describe('App', () => {
     expect(CONTROLS_OVERLAY_BACKDROP).toBe('rgb(0, 0, 0)')
   })
 
-  it('opens the pick dialog from Choose verse in the overlay and closes the overlay', async () => {
+  it('opens the pick dialog from Memory Verses in the overlay and closes the overlay', async () => {
     const user = userEvent.setup()
     await renderAppReady()
 
     await user.click(screen.getByRole('blockquote'))
-    await user.click(screen.getByRole('button', { name: /^choose verse$/i }))
+    await user.click(screen.getByRole('button', { name: /^memory verses$/i }))
 
     expect(screen.queryByRole('heading', { name: /reading menu/i })).not.toBeInTheDocument()
-    expect(screen.getByRole('heading', { name: /^choose verse$/i })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: /^memory verses$/i })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /^test 1:1$/i })).toBeInTheDocument()
   })
 

@@ -1,6 +1,6 @@
 {
-  "name": "Random Bible Verse",
-  "short_name": "Bible Verse",
+  "name": "Hidden",
+  "short_name": "Hidden",
   "description": "A simple app that shows a random Bible verse",
   "start_url": ".",
   "display": "standalone",

@@ -31,6 +31,7 @@ function App() {
     () => readLastDisplayedVerse() ?? FALLBACK_DISPLAY_VERSE,
   )
   const [controlsOverlayOpen, setControlsOverlayOpen] = useState(false)
+  const [aboutOpen, setAboutOpen] = useState(false)
   /** When false, the three crowd / memory-practice buttons are hidden from the verse card. */
   const [crowdModeVisible, setCrowdModeVisible] = useState(false)
   const [hiddenWordIndices, setHiddenWordIndices] = useState(() => new Set())
@@ -102,6 +103,10 @@ function App() {
     window.addEventListener('keydown', onKeyDown)
     return () => window.removeEventListener('keydown', onKeyDown)
   }, [controlsOverlayOpen, closeControlsOverlay])
+
+  useEffect(() => {
+    if (!controlsOverlayOpen) setAboutOpen(false)
+  }, [controlsOverlayOpen])
 
   const verseWords = useMemo(() => (verse ? tokenizeVerse(verse.text) : []), [verse?.text])
 
@@ -214,7 +219,7 @@ function App() {
       <dialog ref={pickDialogRef} className="pick-dialog" onClose={() => {}}>
         <div className="pick-form pick-form-list">
           <h2 className="pick-dialog-title" id="pick-dialog-heading">
-            Choose verse
+            Memory Verses
           </h2>
           <p className="pick-dialog-hint">Pick a verse from your memory list (loaded from the sheet).</p>
           {memoryVersesLoading ? (
@@ -274,7 +279,7 @@ function App() {
               </h2>
               <div className="controls-overlay-actions">
                 <button type="button" className="new-verse-btn" onClick={handleOverlayPickVerseClick}>
-                  Choose verse
+                  Memory Verses
                 </button>
                 <button type="button" className="new-verse-btn" onClick={handleOverlayAnotherVerseClick}>
                   Inspire me
@@ -300,6 +305,27 @@ function App() {
               </div>
             </div>
           </div>
+          <button
+            type="button"
+            className="controls-overlay-about-btn"
+            onClick={(e) => {
+              e.stopPropagation()
+              setAboutOpen((open) => !open)
+            }}
+            aria-expanded={aboutOpen}
+          >
+            About
+          </button>
+          {aboutOpen ? (
+            <p
+              className="controls-overlay-about-text"
+              onClick={(e) => e.stopPropagation()}
+            >
+              Psalm 119:11 says I have hidden your word in my heart that I might not sin against you.
+              The app is called &ldquo;hidden&rdquo; representing what we have hidden in our hearts.
+            </p>
+          ) : null}
+          <p className="controls-overlay-dedication">Made with ❤️ for KSR</p>
           <p className="controls-overlay-build" aria-label="Build version">
             {formatBuildLabel()}
           </p>
