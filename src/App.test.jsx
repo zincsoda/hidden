@@ -54,32 +54,42 @@ describe('App', () => {
     await waitFor(() => expect(screen.getByRole('blockquote')).toBeInTheDocument())
   }
 
-  it('shows iOS add-to-home instructions above the dedication when enabled', async () => {
+  it('shows iOS install instructions above the dedication when enabled', async () => {
     vi.mocked(isIosDevice).mockReturnValue(true)
     const user = userEvent.setup()
     await renderAppReady()
 
     await user.click(screen.getByRole('blockquote'))
-    expect(screen.getByRole('button', { name: /^add to home screen$/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /^install on ios$/i })).toBeInTheDocument()
 
     expect(screen.queryByRole('list')).not.toBeInTheDocument()
-    await user.click(screen.getByRole('button', { name: /^add to home screen$/i }))
+    await user.click(screen.getByRole('button', { name: /^install on ios$/i }))
     const list = screen.getByRole('list')
     expect(list).toHaveAttribute('id', 'ios-install-instructions')
     expect(list).toHaveTextContent(/share button/i)
     expect(list).toHaveTextContent(/add to home screen/i)
 
-    await user.click(screen.getByRole('button', { name: /^add to home screen$/i }))
+    await user.click(screen.getByRole('button', { name: /^install on ios$/i }))
     expect(screen.queryByRole('list')).not.toBeInTheDocument()
   })
 
-  it('hides iOS add-to-home control on non-iOS devices', async () => {
+  it('hides iOS install control on non-iOS devices', async () => {
     vi.mocked(isIosDevice).mockReturnValue(false)
     const user = userEvent.setup()
     await renderAppReady()
 
     await user.click(screen.getByRole('blockquote'))
-    expect(screen.queryByRole('button', { name: /^add to home screen$/i })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /^install on ios$/i })).not.toBeInTheDocument()
+  })
+
+  it('names the iOS PWA install trigger “Install on iOS” (not Add to Home Screen)', async () => {
+    vi.mocked(isIosDevice).mockReturnValue(true)
+    const user = userEvent.setup()
+    await renderAppReady()
+
+    await user.click(screen.getByRole('blockquote'))
+    expect(screen.getByRole('button', { name: 'Install on iOS' })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Add to Home Screen' })).not.toBeInTheDocument()
   })
 
   it('clears iOS install instructions when the reading menu closes', async () => {
@@ -88,7 +98,7 @@ describe('App', () => {
     await renderAppReady()
 
     await user.click(screen.getByRole('blockquote'))
-    await user.click(screen.getByRole('button', { name: /^add to home screen$/i }))
+    await user.click(screen.getByRole('button', { name: /^install on ios$/i }))
     expect(screen.getByRole('list')).toBeInTheDocument()
 
     await user.click(screen.getByRole('button', { name: /hide reading menu/i }))
