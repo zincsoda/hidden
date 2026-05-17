@@ -15,7 +15,12 @@ export function readLastDisplayedVerse() {
     const reference = String(o?.reference ?? '').trim()
     const text = String(o?.text ?? '').trim()
     if (!reference || !text) return null
-    return { reference, text }
+    const dateRaw = o?.date
+    const date =
+      dateRaw != null && String(dateRaw).trim() !== '' ? String(dateRaw).trim() : ''
+    const verse = { reference, text }
+    if (date) verse.date = date
+    return verse
   } catch {
     return null
   }
@@ -27,10 +32,12 @@ export function writeLastDisplayedVerse(verse) {
     const reference = String(verse?.reference ?? '').trim()
     const text = String(verse?.text ?? '').trim()
     if (!reference || !text) return
-    localStorage.setItem(
-      LAST_DISPLAYED_VERSE_KEY,
-      JSON.stringify({ reference, text }),
-    )
+    const payload = { reference, text }
+    const dateRaw = verse?.date
+    if (dateRaw != null && String(dateRaw).trim() !== '') {
+      payload.date = String(dateRaw).trim()
+    }
+    localStorage.setItem(LAST_DISPLAYED_VERSE_KEY, JSON.stringify(payload))
   } catch {
     // quota / private mode
   }
