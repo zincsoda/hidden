@@ -7,7 +7,7 @@ import App, {
   FEATURE_REQUEST_SUBJECT,
   featureRequestMailtoHref,
 } from './App.jsx'
-import { OVERLAY_BACKDROP_OPTIONS, STORAGE_KEY as OVERLAY_BACKDROP_KEY } from './overlayBackdrop.js'
+import { OVERLAY_BACKDROP_OPTIONS, APP_BACKGROUND_STORAGE_KEY } from './overlayBackdrop.js'
 import { fetchMemoryVerses } from './memoryVersesApi'
 import { LAST_DISPLAYED_VERSE_KEY } from './lastDisplayedVerse'
 import { pickRandomFromPool } from './memoryHelpers'
@@ -227,7 +227,7 @@ describe('App', () => {
     expect(screen.queryByRole('dialog', { name: /reading menu/i })).not.toBeInTheDocument()
   })
 
-  it('orders reading menu actions: Memory Verses, Inspire me, request feature, Text size, Letter cue, Crowd mode, Menu backdrop', async () => {
+  it('orders reading menu actions: Memory Verses, Inspire me, request feature, Text size, Letter cue, Crowd mode, Background colour', async () => {
     const user = userEvent.setup()
     await renderAppReady()
 
@@ -248,7 +248,7 @@ describe('App', () => {
     expect(actions.children[5]).toHaveClass('controls-overlay-setting-row')
     expect(actions.children[5]).toHaveTextContent(/crowd mode/i)
     expect(actions.children[6]).toHaveClass('controls-overlay-setting-row')
-    expect(actions.children[6]).toHaveTextContent(/menu backdrop/i)
+    expect(actions.children[6]).toHaveTextContent(/background colour/i)
   })
 
   it('exposes a request feature mailto link with the configured address and subject', () => {
@@ -306,32 +306,42 @@ describe('App', () => {
     expect(dialog.firstElementChild).toBe(body)
   })
 
-  it('exports a fully opaque controls overlay backdrop color', () => {
-    expect(CONTROLS_OVERLAY_BACKDROP).toBe('rgb(0, 0, 0)')
+  it('exports the default page background colour constant', () => {
+    expect(CONTROLS_OVERLAY_BACKDROP).toBe('#082818')
   })
 
-  it('lets you pick reading menu backdrop colour and persists index in localStorage', async () => {
+  it('lets you pick background colour for the main view from a dropdown and persists it', async () => {
     const user = userEvent.setup()
     await renderAppReady()
+
+    expect(document.documentElement).toHaveStyle({
+      backgroundColor: OVERLAY_BACKDROP_OPTIONS[1].value,
+    })
 
     await user.click(screen.getByRole('blockquote'))
     const dialog = screen.getByRole('dialog', { name: /reading menu/i })
 
-    const pageGreen = OVERLAY_BACKDROP_OPTIONS[1]
-    await user.click(screen.getByRole('radio', { name: pageGreen.label }))
-    expect(dialog).toHaveStyle({ backgroundColor: pageGreen.value })
-    expect(dialog.querySelector('.controls-overlay-backdrop-swatch--selected')).toBeTruthy()
-    expect(localStorage.getItem(OVERLAY_BACKDROP_KEY)).toBe('1')
+    const slateIndex = 2
+    const slateBlue = OVERLAY_BACKDROP_OPTIONS[slateIndex]
+    const select = within(dialog).getByLabelText(/^background colour$/i)
+    await user.selectOptions(select, String(slateIndex))
+
+    expect(document.documentElement).toHaveStyle({ backgroundColor: slateBlue.value })
+    expect(dialog).toHaveStyle({ backgroundColor: slateBlue.value })
+    expect(localStorage.getItem(APP_BACKGROUND_STORAGE_KEY)).toBe('2')
+    expect(select).toHaveValue('2')
 
     await user.click(screen.getByRole('button', { name: /^hide reading menu/i }))
     await user.click(screen.getByRole('blockquote'))
+    expect(document.documentElement).toHaveStyle({ backgroundColor: slateBlue.value })
     expect(screen.getByRole('dialog', { name: /reading menu/i })).toHaveStyle({
-      backgroundColor: pageGreen.value,
+      backgroundColor: slateBlue.value,
     })
-    expect(screen.getByRole('radio', { name: pageGreen.label })).toHaveAttribute(
-      'aria-checked',
-      'true',
-    )
+    expect(
+      within(screen.getByRole('dialog', { name: /reading menu/i })).getByLabelText(
+        /^background colour$/i,
+      ),
+    ).toHaveValue('2')
   })
 
   it('opens the pick dialog from Memory Verses in the overlay and closes the overlay', async () => {

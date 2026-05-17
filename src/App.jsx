@@ -18,8 +18,8 @@ import {
 import {
   OVERLAY_BACKDROP_OPTIONS,
   overlayBackdropCssAt,
-  persistOverlayBackdropIndex,
-  readOverlayBackdropIndex,
+  readAppBackgroundIndex,
+  persistAppBackgroundIndex,
 } from './overlayBackdrop.js'
 import {
   buildLetterCueLine,
@@ -69,8 +69,8 @@ function App() {
   const [revealHiddenWords, setRevealHiddenWords] = useState(false)
   const [letterCueModeEnabled, setLetterCueModeEnabled] = useState(false)
   const [selectedLetterIndices, setSelectedLetterIndices] = useState(() => new Set())
-  const [overlayBackdropIndex, setOverlayBackdropIndexState] = useState(() =>
-    readOverlayBackdropIndex(),
+  const [appBackgroundIndex, setAppBackgroundIndexState] = useState(() =>
+    readAppBackgroundIndex(),
   )
   const pickDialogRef = useRef(null)
 
@@ -83,9 +83,17 @@ function App() {
     setVerseFontScaleIndexState(next)
   }, [])
 
-  const selectOverlayBackdropIndex = useCallback((index) => {
-    setOverlayBackdropIndexState(persistOverlayBackdropIndex(index))
+  const selectAppBackgroundIndex = useCallback((index) => {
+    setAppBackgroundIndexState(persistAppBackgroundIndex(index))
   }, [])
+
+  useEffect(() => {
+    const colour = overlayBackdropCssAt(appBackgroundIndex)
+    document.documentElement.style.backgroundColor = colour
+    return () => {
+      document.documentElement.style.backgroundColor = ''
+    }
+  }, [appBackgroundIndex])
 
   const showNewVerse = () => {
     const picked = getRandomBuiltInVerse(verse)
@@ -379,7 +387,7 @@ function App() {
           aria-labelledby="controls-overlay-heading"
           className="controls-overlay"
           style={{
-            backgroundColor: overlayBackdropCssAt(overlayBackdropIndex),
+            backgroundColor: overlayBackdropCssAt(appBackgroundIndex),
           }}
           onClick={closeControlsOverlay}
         >
@@ -477,39 +485,25 @@ function App() {
                   className="controls-overlay-setting-row"
                   onClick={(e) => e.stopPropagation()}
                 >
-                  <span
+                  <label
                     className="controls-overlay-setting-label"
-                    id="overlay-backdrop-label"
+                    htmlFor="app-background-select"
+                    id="app-background-label"
                   >
-                    Menu backdrop
-                  </span>
-                  <div
-                    className="controls-overlay-backdrop-swatches"
-                    role="radiogroup"
-                    aria-labelledby="overlay-backdrop-label"
+                    Background colour
+                  </label>
+                  <select
+                    id="app-background-select"
+                    className="controls-overlay-background-select"
+                    value={appBackgroundIndex}
+                    onChange={(e) => selectAppBackgroundIndex(Number(e.target.value))}
                   >
                     {OVERLAY_BACKDROP_OPTIONS.map((opt, i) => (
-                      <button
-                        key={opt.id}
-                        type="button"
-                        role="radio"
-                        className={`controls-overlay-backdrop-swatch${
-                          overlayBackdropIndex === i
-                            ? ' controls-overlay-backdrop-swatch--selected'
-                            : ''
-                        }`}
-                        aria-label={opt.label}
-                        aria-checked={overlayBackdropIndex === i}
-                        onClick={() => selectOverlayBackdropIndex(i)}
-                      >
-                        <span
-                          className="controls-overlay-backdrop-swatch-fill"
-                          style={{ backgroundColor: opt.value }}
-                          aria-hidden="true"
-                        />
-                      </button>
+                      <option key={opt.id} value={i}>
+                        {opt.label}
+                      </option>
                     ))}
-                  </div>
+                  </select>
                 </div>
               </div>
             </div>
