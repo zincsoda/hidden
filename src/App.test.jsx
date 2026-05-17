@@ -7,6 +7,7 @@ import App, {
   FEATURE_REQUEST_SUBJECT,
   featureRequestMailtoHref,
 } from './App.jsx'
+import { OVERLAY_BACKDROP_OPTIONS, STORAGE_KEY as OVERLAY_BACKDROP_KEY } from './overlayBackdrop.js'
 import { fetchMemoryVerses } from './memoryVersesApi'
 import { LAST_DISPLAYED_VERSE_KEY } from './lastDisplayedVerse'
 import { pickRandomFromPool } from './memoryHelpers'
@@ -226,7 +227,7 @@ describe('App', () => {
     expect(screen.queryByRole('dialog', { name: /reading menu/i })).not.toBeInTheDocument()
   })
 
-  it('orders reading menu actions: Memory Verses, Inspire me, request feature, Text size, Letter cue, then Crowd mode', async () => {
+  it('orders reading menu actions: Memory Verses, Inspire me, request feature, Text size, Letter cue, Crowd mode, Menu backdrop', async () => {
     const user = userEvent.setup()
     await renderAppReady()
 
@@ -234,7 +235,7 @@ describe('App', () => {
     const dialog = screen.getByRole('dialog', { name: /reading menu/i })
     const actions = dialog.querySelector('.controls-overlay-actions')
     expect(actions).toBeTruthy()
-    expect(actions.children.length).toBe(6)
+    expect(actions.children.length).toBe(7)
 
     expect(actions.children[0]).toHaveTextContent(/memory verses/i)
     expect(actions.children[1]).toHaveTextContent(/inspire me/i)
@@ -246,6 +247,8 @@ describe('App', () => {
     expect(actions.children[4]).toHaveTextContent(/letter cue method/i)
     expect(actions.children[5]).toHaveClass('controls-overlay-setting-row')
     expect(actions.children[5]).toHaveTextContent(/crowd mode/i)
+    expect(actions.children[6]).toHaveClass('controls-overlay-setting-row')
+    expect(actions.children[6]).toHaveTextContent(/menu backdrop/i)
   })
 
   it('exposes a request feature mailto link with the configured address and subject', () => {
@@ -305,6 +308,30 @@ describe('App', () => {
 
   it('exports a fully opaque controls overlay backdrop color', () => {
     expect(CONTROLS_OVERLAY_BACKDROP).toBe('rgb(0, 0, 0)')
+  })
+
+  it('lets you pick reading menu backdrop colour and persists index in localStorage', async () => {
+    const user = userEvent.setup()
+    await renderAppReady()
+
+    await user.click(screen.getByRole('blockquote'))
+    const dialog = screen.getByRole('dialog', { name: /reading menu/i })
+
+    const pageGreen = OVERLAY_BACKDROP_OPTIONS[1]
+    await user.click(screen.getByRole('radio', { name: pageGreen.label }))
+    expect(dialog).toHaveStyle({ backgroundColor: pageGreen.value })
+    expect(dialog.querySelector('.controls-overlay-backdrop-swatch--selected')).toBeTruthy()
+    expect(localStorage.getItem(OVERLAY_BACKDROP_KEY)).toBe('1')
+
+    await user.click(screen.getByRole('button', { name: /^hide reading menu/i }))
+    await user.click(screen.getByRole('blockquote'))
+    expect(screen.getByRole('dialog', { name: /reading menu/i })).toHaveStyle({
+      backgroundColor: pageGreen.value,
+    })
+    expect(screen.getByRole('radio', { name: pageGreen.label })).toHaveAttribute(
+      'aria-checked',
+      'true',
+    )
   })
 
   it('opens the pick dialog from Memory Verses in the overlay and closes the overlay', async () => {
