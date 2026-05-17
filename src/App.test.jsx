@@ -316,6 +316,8 @@ describe('App', () => {
     expect(actions.children[0]).toHaveTextContent(/memory verses/i)
     expect(actions.children[1]).toHaveTextContent(/inspire me/i)
     expect(actions.children[2]).toHaveAttribute('href', featureRequestMailtoHref())
+    expect(actions.children[2]).toHaveAttribute('target', '_blank')
+    expect(actions.children[2]).toHaveAttribute('rel', 'noopener noreferrer')
     expect(actions.children[2]).toHaveTextContent(/request feature/i)
     expect(actions.children[3]).toHaveClass('controls-overlay-setting-row')
     expect(actions.children[3]).toHaveTextContent(/text size/i)
@@ -325,6 +327,17 @@ describe('App', () => {
     expect(actions.children[5]).toHaveTextContent(/crowd mode/i)
     expect(actions.children[6]).toHaveClass('controls-overlay-setting-row')
     expect(actions.children[6]).toHaveTextContent(/background colour/i)
+  })
+
+  it('opens request feature in a new browser tab (target blank, noopener)', async () => {
+    const user = userEvent.setup()
+    await renderAppReady()
+
+    await user.click(screen.getByRole('blockquote'))
+    const dialog = screen.getByRole('dialog', { name: /reading menu/i })
+    const requestLink = within(dialog).getByRole('link', { name: /^request feature$/i })
+    expect(requestLink).toHaveAttribute('target', '_blank')
+    expect(requestLink).toHaveAttribute('rel', 'noopener noreferrer')
   })
 
   it('exposes a request feature mailto link with the configured address and subject', () => {
