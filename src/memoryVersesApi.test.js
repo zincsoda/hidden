@@ -1,5 +1,9 @@
 import { describe, it, expect } from 'vitest'
-import { parseSheetDate, getMostRecentMemoryVerse } from './memoryVersesApi.js'
+import {
+  parseSheetDate,
+  getMostRecentMemoryVerse,
+  shouldUpdateToLatestMemoryVerse,
+} from './memoryVersesApi.js'
 
 describe('parseSheetDate', () => {
   it('parses DD/MM/YY as UK date', () => {
@@ -51,5 +55,49 @@ describe('getMostRecentMemoryVerse', () => {
     const out = getMostRecentMemoryVerse([row])
     expect(out).toEqual(row)
     expect(out).not.toBe(row)
+  })
+})
+
+describe('shouldUpdateToLatestMemoryVerse', () => {
+  it('is false when API verse is missing', () => {
+    expect(
+      shouldUpdateToLatestMemoryVerse({ reference: 'A', text: 'a', date: '1/1/25' }, null),
+    ).toBe(false)
+  })
+
+  it('is true when API date is strictly newer', () => {
+    expect(
+      shouldUpdateToLatestMemoryVerse(
+        { reference: 'Old', text: 'o', date: '1/1/25' },
+        { reference: 'New', text: 'n', date: '16/05/26' },
+      ),
+    ).toBe(true)
+  })
+
+  it('is false when dates are equal', () => {
+    expect(
+      shouldUpdateToLatestMemoryVerse(
+        { reference: 'A', text: 'a', date: '1/1/26' },
+        { reference: 'B', text: 'b', date: '1/1/26' },
+      ),
+    ).toBe(false)
+  })
+
+  it('is false when displayed verse has no parseable date', () => {
+    expect(
+      shouldUpdateToLatestMemoryVerse(
+        { reference: 'A', text: 'built-in' },
+        { reference: 'B', text: 'sheet', date: '16/05/26' },
+      ),
+    ).toBe(false)
+  })
+
+  it('is false when API verse has no parseable date', () => {
+    expect(
+      shouldUpdateToLatestMemoryVerse(
+        { reference: 'A', text: 'a', date: '1/1/26' },
+        { reference: 'B', text: 'b' },
+      ),
+    ).toBe(false)
   })
 })

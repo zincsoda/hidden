@@ -26,6 +26,12 @@ describe('lastDisplayedVerse', () => {
     expect(localStorage.getItem(LAST_DISPLAYED_VERSE_KEY)).toBe(JSON.stringify(v))
   })
 
+  it('round-trips optional sheet date', () => {
+    const v = { reference: 'John 3:16', text: 'For God so loved…', date: '16/05/26' }
+    writeLastDisplayedVerse(v)
+    expect(readLastDisplayedVerse()).toEqual(v)
+  })
+
   it('returns null for invalid JSON', () => {
     localStorage.setItem(LAST_DISPLAYED_VERSE_KEY, 'not-json')
     expect(readLastDisplayedVerse()).toBeNull()

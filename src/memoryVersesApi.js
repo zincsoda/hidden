@@ -59,6 +59,21 @@ export function getMostRecentMemoryVerse(list) {
 }
 
 /**
+ * After a background fetch, whether the home screen should switch to `latestFromApi`.
+ * Only when both the displayed verse and API verse have parseable sheet dates and the API verse is strictly newer
+ * (so undated / built-in verses are not overwritten).
+ * @param {{ reference: string, text: string, date?: string }} displayed
+ * @param {{ reference: string, text: string, date?: string }} latestFromApi
+ */
+export function shouldUpdateToLatestMemoryVerse(displayed, latestFromApi) {
+  if (!latestFromApi || !displayed) return false
+  const apiMs = latestFromApi.date ? parseSheetDate(latestFromApi.date) : NaN
+  const shownMs = displayed.date ? parseSheetDate(displayed.date) : NaN
+  if (Number.isNaN(apiMs) || Number.isNaN(shownMs)) return false
+  return apiMs > shownMs
+}
+
+/**
  * @returns {Promise<Array<{ reference: string, text: string, date?: string }>>}
  */
 export async function fetchMemoryVerses() {

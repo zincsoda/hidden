@@ -65,6 +65,82 @@ describe('App', () => {
     await waitFor(() => expect(screen.getByRole('blockquote')).toBeInTheDocument())
   }
 
+  it('on first open shows loading text then the newest dated memory verse from the API', async () => {
+    localStorage.clear()
+    vi.mocked(fetchMemoryVerses).mockResolvedValue([
+      { reference: 'Older', text: 'old line', date: '1/1/25' },
+      { reference: 'Newer', text: 'new line', date: '16/05/26' },
+    ])
+    render(<App />)
+    expect(screen.getByText('Loading memory verse …')).toBeInTheDocument()
+    expect(screen.queryByRole('blockquote')).not.toBeInTheDocument()
+    await waitFor(() => {
+      expect(screen.queryByText('Loading memory verse …')).not.toBeInTheDocument()
+    })
+    expect(screen.getByRole('blockquote')).toHaveTextContent(/new line/)
+    expect(screen.getByText(/— Newer$/)).toBeInTheDocument()
+  })
+
+  it('on first open when the API fails, falls back to the built-in verse', async () => {
+    localStorage.clear()
+    vi.mocked(fetchMemoryVerses).mockRejectedValue(new Error('network'))
+    render(<App />)
+    expect(screen.getByText('Loading memory verse …')).toBeInTheDocument()
+    await waitFor(() => {
+      expect(screen.getByRole('blockquote')).toHaveTextContent(/hidden your word/i)
+    })
+  })
+
+  it('shows the last verse immediately then presents a newer API verse once fetched', async () => {
+    localStorage.setItem(
+      LAST_DISPLAYED_VERSE_KEY,
+      JSON.stringify({ reference: 'Old', text: 'cached body', date: '1/1/25' }),
+    )
+    let resolveShared
+    const sharedPromise = new Promise((resolve) => {
+      resolveShared = resolve
+    })
+    vi.mocked(fetchMemoryVerses).mockImplementation(() => sharedPromise)
+    render(<App />)
+    expect(screen.queryByText('Loading memory verse …')).not.toBeInTheDocument()
+    expect(screen.getByRole('blockquote')).toHaveTextContent(/cached body/)
+    resolveShared([
+      { reference: 'Old', text: 'cached body', date: '1/1/25' },
+      { reference: 'Fresh', text: 'from api', date: '16/05/26' },
+    ])
+    await waitFor(() => {
+      expect(screen.getByRole('blockquote')).toHaveTextContent(/from api/)
+    })
+    expect(screen.getByText(/— Fresh$/)).toBeInTheDocument()
+  })
+
+  it('does not replace an undated displayed verse when the API returns a newer sheet verse', async () => {
+    localStorage.setItem(
+      LAST_DISPLAYED_VERSE_KEY,
+      JSON.stringify({ reference: 'Built', text: 'built-in line' }),
+    )
+    vi.mocked(fetchMemoryVerses).mockResolvedValue([
+      { reference: 'Sheet', text: 'sheet line', date: '16/05/26' },
+    ])
+    render(<App />)
+    await waitFor(() => expect(screen.getByRole('blockquote')).toBeInTheDocument())
+    expect(screen.getByRole('blockquote')).toHaveTextContent(/built-in line/)
+    expect(screen.queryByText(/sheet line/)).not.toBeInTheDocument()
+  })
+
+  it('does not swap when the API latest is not newer than the stored dated verse', async () => {
+    localStorage.setItem(
+      LAST_DISPLAYED_VERSE_KEY,
+      JSON.stringify({ reference: 'Current', text: 'stay', date: '16/05/26' }),
+    )
+    vi.mocked(fetchMemoryVerses).mockResolvedValue([
+      { reference: 'Older', text: 'other text', date: '1/1/25' },
+    ])
+    render(<App />)
+    await waitFor(() => expect(screen.getByRole('blockquote')).toHaveTextContent(/stay/))
+    expect(screen.queryByText(/other text/)).not.toBeInTheDocument()
+  })
+
   it('shows iOS install instructions above the dedication when enabled', async () => {
     vi.mocked(isIosDevice).mockReturnValue(true)
     const user = userEvent.setup()

@@ -1,6 +1,10 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import { getRandomBuiltInVerse } from './verses'
-import { fetchMemoryVerses } from './memoryVersesApi'
+import {
+  fetchMemoryVerses,
+  getMostRecentMemoryVerse,
+  shouldUpdateToLatestMemoryVerse,
+} from './memoryVersesApi'
 import {
   readLastDisplayedVerse,
   writeLastDisplayedVerse,
@@ -53,6 +57,9 @@ function App() {
   const [memoryVerses, setMemoryVerses] = useState([])
   const [memoryVersesLoading, setMemoryVersesLoading] = useState(true)
   const [memoryVersesError, setMemoryVersesError] = useState('')
+  const [awaitingInitialMemoryVerse, setAwaitingInitialMemoryVerse] = useState(
+    () => readLastDisplayedVerse() === null,
+  )
   const [verse, setVerse] = useState(
     () => readLastDisplayedVerse() ?? FALLBACK_DISPLAY_VERSE,
   )
@@ -117,11 +124,13 @@ function App() {
   }
 
   useEffect(() => {
+    if (awaitingInitialMemoryVerse) return
     writeLastDisplayedVerse(verse)
-  }, [verse.reference, verse.text])
+  }, [awaitingInitialMemoryVerse, verse.reference, verse.text, verse.date])
 
   useEffect(() => {
     let cancelled = false
+    const firstOpen = readLastDisplayedVerse() === null
     ;(async () => {
       setMemoryVersesLoading(true)
       setMemoryVersesError('')
@@ -129,11 +138,24 @@ function App() {
         const list = await fetchMemoryVerses()
         if (cancelled) return
         setMemoryVerses(list)
+        const latest = getMostRecentMemoryVerse(list)
+        if (firstOpen) {
+          setVerse(latest ?? FALLBACK_DISPLAY_VERSE)
+          setAwaitingInitialMemoryVerse(false)
+        } else {
+          setVerse((prev) =>
+            latest && shouldUpdateToLatestMemoryVerse(prev, latest) ? latest : prev,
+          )
+        }
       } catch (err) {
         if (cancelled) return
         const message = err instanceof Error ? err.message : 'Could not load verses.'
         setMemoryVersesError(message)
         setMemoryVerses([])
+        if (firstOpen) {
+          setVerse(FALLBACK_DISPLAY_VERSE)
+          setAwaitingInitialMemoryVerse(false)
+        }
       } finally {
         if (!cancelled) setMemoryVersesLoading(false)
       }
@@ -202,6 +224,7 @@ function App() {
     verseWords.length > 0 && hiddenWordIndices.size >= verseWords.length
 
   const handleVerseCardClick = (e) => {
+    if (awaitingInitialMemoryVerse) return
     const el = e.target instanceof Element ? e.target : null
     if (el?.closest('button')) return
     if (el?.closest('.verse-actions')) return
@@ -263,15 +286,20 @@ function App() {
   return (
     <div className="app">
       <main className="verse-card verse-card-interactive" onClick={handleVerseCardClick}>
-        <>
-          {letterCueModeEnabled && letterCueLine ? (
-            <p className="letter-cue-line" aria-live="polite" aria-label="Letter cues">
-              {letterCueLine}
-            </p>
-          ) : null}
-          <blockquote
-            className={`verse-text${letterCueModeEnabled ? ' verse-text--letter-cue' : ''}`}
-          >
+        {awaitingInitialMemoryVerse ? (
+          <p className="verse-loading" aria-live="polite">
+            Loading memory verse …
+          </p>
+        ) : (
+          <>
+            {letterCueModeEnabled && letterCueLine ? (
+              <p className="letter-cue-line" aria-live="polite" aria-label="Letter cues">
+                {letterCueLine}
+              </p>
+            ) : null}
+            <blockquote
+              className={`verse-text${letterCueModeEnabled ? ' verse-text--letter-cue' : ''}`}
+            >
               &ldquo;
               {verseWords.map((word, i) => (
                 <span key={i} className="verse-word">
@@ -330,7 +358,8 @@ function App() {
                 </div>
               </div>
             ) : null}
-        </>
+          </>
+        )}
       </main>
 
       <dialog ref={pickDialogRef} className="pick-dialog" onClose={() => {}}>
