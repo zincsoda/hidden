@@ -134,6 +134,10 @@
   cursor: not-allowed;
 }
 
+a.new-verse-btn {
+  text-decoration: none;
+}
+
 .verse-actions {
   display: flex;
   flex-direction: column;
