@@ -435,6 +435,8 @@ function App() {
                 <a
                   className="new-verse-btn"
                   href={featureRequestMailtoHref()}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   onClick={(e) => e.stopPropagation()}
                 >
                   request feature
