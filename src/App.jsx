@@ -16,6 +16,12 @@ import {
   VERSE_FONT_SCALE_STEPS,
 } from './verseFontSize.js'
 import {
+  OVERLAY_BACKDROP_OPTIONS,
+  overlayBackdropCssAt,
+  persistOverlayBackdropIndex,
+  readOverlayBackdropIndex,
+} from './overlayBackdrop.js'
+import {
   buildLetterCueLine,
   getWordCharRanges,
   isSelectableLetter,
@@ -25,8 +31,7 @@ import './App.css'
 
 const WORD_SPLIT = /\s+/
 
-/** Fully opaque backdrop behind the reading menu. */
-export const CONTROLS_OVERLAY_BACKDROP = 'rgb(0, 0, 0)'
+export { CONTROLS_OVERLAY_BACKDROP } from './overlayBackdrop.js'
 
 export const FEATURE_REQUEST_EMAIL = 'steven.walsh39@gmail.com'
 export const FEATURE_REQUEST_SUBJECT = 'Request for Hidden App'
@@ -64,6 +69,9 @@ function App() {
   const [revealHiddenWords, setRevealHiddenWords] = useState(false)
   const [letterCueModeEnabled, setLetterCueModeEnabled] = useState(false)
   const [selectedLetterIndices, setSelectedLetterIndices] = useState(() => new Set())
+  const [overlayBackdropIndex, setOverlayBackdropIndexState] = useState(() =>
+    readOverlayBackdropIndex(),
+  )
   const pickDialogRef = useRef(null)
 
   const closeControlsOverlay = useCallback(() => {
@@ -73,6 +81,10 @@ function App() {
   const adjustVerseFontScale = useCallback((delta) => {
     const next = bumpVerseFontScale(delta)
     setVerseFontScaleIndexState(next)
+  }, [])
+
+  const selectOverlayBackdropIndex = useCallback((index) => {
+    setOverlayBackdropIndexState(persistOverlayBackdropIndex(index))
   }, [])
 
   const showNewVerse = () => {
@@ -366,7 +378,9 @@ function App() {
           aria-modal="true"
           aria-labelledby="controls-overlay-heading"
           className="controls-overlay"
-          style={{ backgroundColor: CONTROLS_OVERLAY_BACKDROP }}
+          style={{
+            backgroundColor: overlayBackdropCssAt(overlayBackdropIndex),
+          }}
           onClick={closeControlsOverlay}
         >
           <div className="controls-overlay-body">
@@ -458,6 +472,44 @@ function App() {
                   >
                     <span className="ios-switch-thumb" aria-hidden="true" />
                   </button>
+                </div>
+                <div
+                  className="controls-overlay-setting-row"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <span
+                    className="controls-overlay-setting-label"
+                    id="overlay-backdrop-label"
+                  >
+                    Menu backdrop
+                  </span>
+                  <div
+                    className="controls-overlay-backdrop-swatches"
+                    role="radiogroup"
+                    aria-labelledby="overlay-backdrop-label"
+                  >
+                    {OVERLAY_BACKDROP_OPTIONS.map((opt, i) => (
+                      <button
+                        key={opt.id}
+                        type="button"
+                        role="radio"
+                        className={`controls-overlay-backdrop-swatch${
+                          overlayBackdropIndex === i
+                            ? ' controls-overlay-backdrop-swatch--selected'
+                            : ''
+                        }`}
+                        aria-label={opt.label}
+                        aria-checked={overlayBackdropIndex === i}
+                        onClick={() => selectOverlayBackdropIndex(i)}
+                      >
+                        <span
+                          className="controls-overlay-backdrop-swatch-fill"
+                          style={{ backgroundColor: opt.value }}
+                          aria-hidden="true"
+                        />
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
