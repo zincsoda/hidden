@@ -28,6 +28,15 @@ const WORD_SPLIT = /\s+/
 /** Fully opaque backdrop behind the reading menu. */
 export const CONTROLS_OVERLAY_BACKDROP = 'rgb(0, 0, 0)'
 
+export const FEATURE_REQUEST_EMAIL = 'steven.walsh39@gmail.com'
+export const FEATURE_REQUEST_SUBJECT = 'Request for Hidden App'
+
+export function featureRequestMailtoHref() {
+  return `mailto:${FEATURE_REQUEST_EMAIL}?${new URLSearchParams({
+    subject: FEATURE_REQUEST_SUBJECT,
+  })}`
+}
+
 function tokenizeVerse(text) {
   return String(text ?? '')
     .trim()
@@ -372,6 +381,13 @@ function App() {
                 <button type="button" className="new-verse-btn" onClick={handleOverlayAnotherVerseClick}>
                   Inspire me
                 </button>
+                <a
+                  className="new-verse-btn"
+                  href={featureRequestMailtoHref()}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  request feature
+                </a>
                 <div
                   className="controls-overlay-setting-row"
                   onClick={(e) => e.stopPropagation()}

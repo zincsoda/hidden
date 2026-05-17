@@ -1,6 +1,18 @@
 import '@testing-library/jest-dom/vitest'
 import { vi } from 'vitest'
 
+// jsdom does not implement mailto navigation; the deferred failure can surface during later tests.
+document.addEventListener(
+  'click',
+  (e) => {
+    const el = e.target
+    if (!(el instanceof Element)) return
+    const mail = el.closest('a[href^="mailto:"]')
+    if (mail) e.preventDefault()
+  },
+  true,
+)
+
 // Node can inject a partial global `localStorage` (e.g. invalid --localstorage-file) that lacks `clear`.
 if (
   typeof globalThis.localStorage !== 'undefined' &&

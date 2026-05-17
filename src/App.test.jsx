@@ -1,7 +1,12 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { render, screen, within, cleanup, fireEvent, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import App, { CONTROLS_OVERLAY_BACKDROP } from './App.jsx'
+import App, {
+  CONTROLS_OVERLAY_BACKDROP,
+  FEATURE_REQUEST_EMAIL,
+  FEATURE_REQUEST_SUBJECT,
+  featureRequestMailtoHref,
+} from './App.jsx'
 import { fetchMemoryVerses } from './memoryVersesApi'
 import { LAST_DISPLAYED_VERSE_KEY } from './lastDisplayedVerse'
 import { pickRandomFromPool } from './memoryHelpers'
@@ -221,7 +226,7 @@ describe('App', () => {
     expect(screen.queryByRole('dialog', { name: /reading menu/i })).not.toBeInTheDocument()
   })
 
-  it('orders reading menu actions: Memory Verses, Inspire me, Text size, Letter cue, then Crowd mode', async () => {
+  it('orders reading menu actions: Memory Verses, Inspire me, request feature, Text size, Letter cue, then Crowd mode', async () => {
     const user = userEvent.setup()
     await renderAppReady()
 
@@ -229,16 +234,38 @@ describe('App', () => {
     const dialog = screen.getByRole('dialog', { name: /reading menu/i })
     const actions = dialog.querySelector('.controls-overlay-actions')
     expect(actions).toBeTruthy()
-    expect(actions.children.length).toBe(5)
+    expect(actions.children.length).toBe(6)
 
     expect(actions.children[0]).toHaveTextContent(/memory verses/i)
     expect(actions.children[1]).toHaveTextContent(/inspire me/i)
-    expect(actions.children[2]).toHaveClass('controls-overlay-setting-row')
-    expect(actions.children[2]).toHaveTextContent(/text size/i)
+    expect(actions.children[2]).toHaveAttribute('href', featureRequestMailtoHref())
+    expect(actions.children[2]).toHaveTextContent(/request feature/i)
     expect(actions.children[3]).toHaveClass('controls-overlay-setting-row')
-    expect(actions.children[3]).toHaveTextContent(/letter cue method/i)
+    expect(actions.children[3]).toHaveTextContent(/text size/i)
     expect(actions.children[4]).toHaveClass('controls-overlay-setting-row')
-    expect(actions.children[4]).toHaveTextContent(/crowd mode/i)
+    expect(actions.children[4]).toHaveTextContent(/letter cue method/i)
+    expect(actions.children[5]).toHaveClass('controls-overlay-setting-row')
+    expect(actions.children[5]).toHaveTextContent(/crowd mode/i)
+  })
+
+  it('exposes a request feature mailto link with the configured address and subject', () => {
+    expect(FEATURE_REQUEST_EMAIL).toBe('steven.walsh39@gmail.com')
+    expect(FEATURE_REQUEST_SUBJECT).toBe('Request for Hidden App')
+    const href = featureRequestMailtoHref()
+    expect(href).toMatch(/^mailto:steven\.walsh39@gmail\.com\?/)
+    const params = new URLSearchParams(href.split('?')[1] ?? '')
+    expect(params.get('subject')).toBe(FEATURE_REQUEST_SUBJECT)
+  })
+
+  it('keeps the reading menu open when request feature is tapped (does not treat it as backdrop tap)', async () => {
+    const user = userEvent.setup()
+    await renderAppReady()
+
+    await user.click(screen.getByRole('blockquote'))
+    const dialog = screen.getByRole('dialog', { name: /reading menu/i })
+    const requestLink = within(dialog).getByRole('link', { name: /^request feature$/i })
+    fireEvent.click(requestLink)
+    expect(screen.getByRole('dialog', { name: /reading menu/i })).toBeInTheDocument()
   })
 
   it('adjusts verse text size from the reading menu and persists the choice', async () => {
