@@ -31,6 +31,7 @@ import {
   isSelectableLetter,
   toggleLetterIndex,
 } from './letterCue.js'
+import { trackEvent } from './analytics.js'
 import './App.css'
 
 const WORD_SPLIT = /\s+/
@@ -88,10 +89,19 @@ function App() {
   const adjustVerseFontScale = useCallback((delta) => {
     const next = bumpVerseFontScale(delta)
     setVerseFontScaleIndexState(next)
+    trackEvent('setting_change', {
+      setting: 'text_size',
+      value: VERSE_FONT_SCALE_STEPS[next].label,
+    })
   }, [])
 
   const selectAppBackgroundIndex = useCallback((index) => {
     setAppBackgroundIndexState(persistAppBackgroundIndex(index))
+    const option = OVERLAY_BACKDROP_OPTIONS[index]
+    trackEvent('setting_change', {
+      setting: 'background',
+      value: option?.id ?? String(index),
+    })
   }, [])
 
   useEffect(() => {
@@ -104,7 +114,10 @@ function App() {
 
   const showNewVerse = () => {
     const picked = getRandomBuiltInVerse(verse)
-    if (picked) setVerse(picked)
+    if (picked) {
+      setVerse(picked)
+      trackEvent('verse_inspire', { reference: picked.reference })
+    }
   }
 
   const openPickVerse = () => {
@@ -120,6 +133,7 @@ function App() {
 
   const selectVerseFromList = (picked) => {
     setVerse({ ...picked })
+    trackEvent('verse_pick', { reference: picked.reference })
     closePickVerse()
   }
 
@@ -203,6 +217,7 @@ function App() {
   }, [])
 
   const hideMoreWords = useCallback(() => {
+    trackEvent('memory_practice', { action: 'hide_words' })
     setHiddenWordIndices((prev) => {
       if (verseWords.length === 0) return prev
       const available = verseWords.map((_, i) => i).filter((i) => !prev.has(i))
@@ -216,6 +231,7 @@ function App() {
   }, [verseWords])
 
   const showAllWords = useCallback(() => {
+    trackEvent('memory_practice', { action: 'show_all' })
     setHiddenWordIndices(new Set())
     setRevealHiddenWords(false)
   }, [])
@@ -231,6 +247,7 @@ function App() {
     if (el?.closest('.verse-letter-btn')) return
     if (!verse) return
     setControlsOverlayOpen(true)
+    trackEvent('controls_open')
   }
 
   const renderWordLetters = (word, wordIndex) => {
@@ -349,7 +366,14 @@ function App() {
                   <button
                     type="button"
                     className="new-verse-btn verse-actions-memory-wide"
-                    onClick={() => setRevealHiddenWords((v) => !v)}
+                    onClick={() => {
+                      setRevealHiddenWords((v) => {
+                        trackEvent('memory_practice', {
+                          action: v ? 'hide_revealed_text' : 'show_hidden_words',
+                        })
+                        return !v
+                      })
+                    }}
                     disabled={hiddenWordIndices.size === 0}
                     aria-pressed={revealHiddenWords}
                   >
@@ -401,7 +425,12 @@ function App() {
       <button
           type="button"
           className="controls-overlay-toggle"
-          onClick={() => setControlsOverlayOpen((open) => !open)}
+          onClick={() =>
+            setControlsOverlayOpen((open) => {
+              if (!open) trackEvent('controls_open')
+              return !open
+            })
+          }
           aria-expanded={controlsOverlayOpen}
           aria-label={controlsOverlayOpen ? 'Hide reading menu' : 'Show reading menu'}
         >
@@ -437,7 +466,10 @@ function App() {
                   href={featureRequestMailtoHref()}
                   target="_blank"
                   rel="noopener noreferrer"
-                  onClick={(e) => e.stopPropagation()}
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    trackEvent('feature_request')
+                  }}
                 >
                   request feature
                 </a>
@@ -489,7 +521,15 @@ function App() {
                     role="switch"
                     aria-checked={letterCueModeEnabled}
                     aria-labelledby="letter-cue-label"
-                    onClick={() => setLetterCueModeEnabled((v) => !v)}
+                    onClick={() =>
+                      setLetterCueModeEnabled((v) => {
+                        trackEvent('setting_change', {
+                          setting: 'letter_cue',
+                          value: !v ? 'on' : 'off',
+                        })
+                        return !v
+                      })
+                    }
                   >
                     <span className="ios-switch-thumb" aria-hidden="true" />
                   </button>
@@ -507,7 +547,15 @@ function App() {
                     role="switch"
                     aria-checked={crowdModeVisible}
                     aria-labelledby="crowd-mode-label"
-                    onClick={() => setCrowdModeVisible((v) => !v)}
+                    onClick={() =>
+                      setCrowdModeVisible((v) => {
+                        trackEvent('setting_change', {
+                          setting: 'crowd_mode',
+                          value: !v ? 'on' : 'off',
+                        })
+                        return !v
+                      })
+                    }
                   >
                     <span className="ios-switch-thumb" aria-hidden="true" />
                   </button>
@@ -566,7 +614,10 @@ function App() {
                 className="controls-overlay-install-btn"
                 onClick={(e) => {
                   e.stopPropagation()
-                  setIosInstallOpen((open) => !open)
+                  setIosInstallOpen((open) => {
+                    if (!open) trackEvent('ios_install_help_opened')
+                    return !open
+                  })
                 }}
                 aria-expanded={iosInstallOpen}
                 aria-controls={iosInstallOpen ? 'ios-install-instructions' : undefined}

@@ -10,7 +10,11 @@ import {
   subscribeLargeDisplay,
 } from './displayMode.js'
 import { applyVerseFontScale } from './verseFontSize.js'
+import { initAnalytics } from './analytics.js'
+import { initPwaInstallTracking } from './pwaInstallTracking.js'
 
+initAnalytics()
+initPwaInstallTracking()
 readDisplayModeFromUrl()
 applyLargeDisplayClass()
 applyVerseFontScale()

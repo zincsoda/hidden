@@ -39,6 +39,17 @@ The app checks for a new service worker as soon as it opens, then every two minu
 
 GitHub Pages does not let you set custom `Cache-Control` headers on `github.io`, so CDN caching of `sw.js` can occasionally add extra delay after a deploy. If that becomes a problem, a common approach is to put a CDN you control (for example Cloudflare) in front of the site and bypass or shorten cache for the service worker URL.
 
+## Google Analytics (GA4)
+
+1. In [Google Analytics](https://analytics.google.com/), open your property → **Admin** → **Data streams** → your web stream.
+2. Copy the **Measurement ID** (format `G-XXXXXXXXXX`).
+3. **Local dev:** copy `.env.example` to `.env` and set `VITE_GA_MEASUREMENT_ID=G-XXXXXXXXXX`, then restart `npm run dev`.
+4. **Production (GitHub Pages):** add a repository secret named `VITE_GA_MEASUREMENT_ID` with that same value (**Settings → Secrets and variables → Actions**). The deploy workflow passes it into the build.
+
+Analytics is off when the variable is unset (including in tests). Page views are sent automatically; custom events include verse picks, “Inspire me”, settings changes, and memory-practice actions. Verse text is not sent—only references where useful.
+
+**PWA installs:** Chrome/Edge/Android fire a `pwa_install` event when the user completes the browser install prompt. iOS does not expose an install event (users add via Share → Add to Home Screen); GA will record `pwa_standalone_session` the first time they open the app from the home screen icon each session, which reflects installed usage but not the exact install moment. Expanding **Install on iOS** in the reading menu sends `ios_install_help_opened` (interest in installing, not a completed install).
+
 ## Features
 
 - Random verse on load; “Another verse” loads a new one
