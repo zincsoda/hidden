@@ -6,6 +6,8 @@ export const VERSE_FONT_SCALE_STEPS = [
   { label: 'Default', scale: 1 },
   { label: 'Large', scale: 1.15 },
   { label: 'Larger', scale: 1.3 },
+  { label: 'XL', scale: 1.5 },
+  { label: 'XXL', scale: 1.7 },
 ]
 
 export const DEFAULT_VERSE_FONT_SCALE_INDEX = 2
