@@ -13,6 +13,7 @@ import { LAST_DISPLAYED_VERSE_KEY } from './lastDisplayedVerse'
 import { pickRandomFromPool } from './memoryHelpers'
 import { isIosDevice } from './iosDevice.js'
 import { getRandomBuiltInVerse } from './verses'
+import { VERSE_FONT_SCALE_STEPS, DEFAULT_VERSE_FONT_SCALE_INDEX } from './verseFontSize.js'
 
 vi.mock('./memoryHelpers', () => ({
   pickRandomFromPool: vi.fn(() => [0]),
@@ -375,6 +376,33 @@ describe('App', () => {
     await user.click(screen.getByRole('button', { name: /^hide reading menu/i }))
     await user.click(screen.getByRole('blockquote'))
     expect(screen.getByText('Large')).toBeInTheDocument()
+  })
+
+  it('offers XL and XXL text sizes above Larger and persists the choice', async () => {
+    const user = userEvent.setup()
+    await renderAppReady()
+
+    await user.click(screen.getByRole('blockquote'))
+    const xlIndex = VERSE_FONT_SCALE_STEPS.findIndex((s) => s.label === 'XL')
+    for (let i = DEFAULT_VERSE_FONT_SCALE_INDEX; i < xlIndex; i++) {
+      await user.click(screen.getByRole('button', { name: /^larger text$/i }))
+    }
+    expect(screen.getByText('XL')).toBeInTheDocument()
+    expect(document.documentElement.style.getPropertyValue('--verse-font-scale')).toBe('1.5')
+    expect(localStorage.getItem('verseFontScale')).toBe(
+      String(VERSE_FONT_SCALE_STEPS.findIndex((s) => s.label === 'XL')),
+    )
+
+    await user.click(screen.getByRole('button', { name: /^larger text$/i }))
+    expect(screen.getByText('XXL')).toBeInTheDocument()
+    expect(document.documentElement.style.getPropertyValue('--verse-font-scale')).toBe('1.7')
+    expect(localStorage.getItem('verseFontScale')).toBe(
+      String(VERSE_FONT_SCALE_STEPS.findIndex((s) => s.label === 'XXL')),
+    )
+
+    await user.click(screen.getByRole('button', { name: /^hide reading menu/i }))
+    await user.click(screen.getByRole('blockquote'))
+    expect(screen.getByText('XXL')).toBeInTheDocument()
   })
 
   it('uses a fully opaque reading menu backdrop and anchors the build label to the bottom of the overlay', async () => {

@@ -1,7 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import {
   readVerseFontScaleIndex,
-  applyVerseFontScale,
   setVerseFontScaleIndex,
   bumpVerseFontScale,
   DEFAULT_VERSE_FONT_SCALE_INDEX,
@@ -41,9 +40,22 @@ describe('verseFontSize', () => {
     expect(readVerseFontScaleIndex()).toBe(DEFAULT_VERSE_FONT_SCALE_INDEX)
   })
 
+  it('includes XL and XXL steps with larger scales than Larger', () => {
+    const larger = VERSE_FONT_SCALE_STEPS.find((s) => s.label === 'Larger')
+    const xl = VERSE_FONT_SCALE_STEPS.find((s) => s.label === 'XL')
+    const xxl = VERSE_FONT_SCALE_STEPS.find((s) => s.label === 'XXL')
+    expect(larger?.scale).toBe(1.3)
+    expect(xl?.scale).toBe(1.5)
+    expect(xxl?.scale).toBe(1.7)
+    expect(xxl?.scale ?? 0).toBeGreaterThan(xl?.scale ?? 0)
+    expect(xl?.scale ?? 0).toBeGreaterThan(larger?.scale ?? 0)
+  })
+
   it('applies --verse-font-scale on the document element', () => {
     setVerseFontScaleIndex(4)
     expect(document.documentElement.style.getPropertyValue('--verse-font-scale')).toBe('1.3')
+    setVerseFontScaleIndex(VERSE_FONT_SCALE_STEPS.length - 1)
+    expect(document.documentElement.style.getPropertyValue('--verse-font-scale')).toBe('1.7')
   })
 
   it('clamps bumps at the ends of the range', () => {
