@@ -46,3 +46,8 @@ jobs:
           directory: dist
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}
           branch: staging
+
+      - name: Ensure staging custom domain
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: bash scripts/ensure-pages-domain.sh "${{ secrets.CLOUDFLARE_ACCOUNT_ID }}" random-bible-verse-staging staging.hidden.swlabs.cc

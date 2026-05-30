@@ -36,9 +36,15 @@ Production stays on GitHub Pages (`main`). Staging deploys to Cloudflare Pages f
    - `CLOUDFLARE_API_TOKEN` — token from step 3
    - `CLOUDFLARE_ACCOUNT_ID` — account ID from step 2
    - `VITE_GA_MEASUREMENT_ID_STAGING` *(optional)* — separate GA4 stream for staging; omit to keep analytics off on staging
-5. Create and push a `staging` branch (or merge into it). The workflow creates the Pages project `random-bible-verse-staging` on first deploy.
+5. Ensure the `swlabs.cc` zone is on the same Cloudflare account (production uses `hidden.swlabs.cc` via GitHub Pages; staging uses Cloudflare Pages).
+6. Create and push a `staging` branch (or merge into it). The workflow creates the Pages project `random-bible-verse-staging` on first deploy and attaches the custom domain.
 
-Staging URL: `https://random-bible-verse-staging.pages.dev` (or add a custom domain under the Pages project, e.g. `staging.hidden.swlabs.cc`).
+**Staging URLs**
+
+- [https://staging.hidden.swlabs.cc/](https://staging.hidden.swlabs.cc/) — custom domain (auto-attached after each deploy)
+- [https://random-bible-verse-staging.pages.dev](https://random-bible-verse-staging.pages.dev) — default Pages hostname
+
+The deploy workflow calls Cloudflare’s API to attach `staging.hidden.swlabs.cc` if it is not already linked. Cloudflare creates the DNS record and TLS certificate when `swlabs.cc` is on that account. First deploy may take a few minutes for SSL to become active.
 
 To promote changes: merge `staging` → `main` (production deploys via the GitHub Pages workflow).
 
