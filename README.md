@@ -23,6 +23,27 @@ npm run preview
 
 The service worker is only registered in production, so the app can be installed and used offline after the first load.
 
+## Deploy staging to Cloudflare Pages
+
+Production stays on GitHub Pages (`main`). Staging deploys to Cloudflare Pages from the `staging` branch.
+
+### One-time Cloudflare setup
+
+1. In [Cloudflare Dashboard](https://dash.cloudflare.com/) → **Workers & Pages** → **Create** → **Pages** → **Connect to Git** is optional; this repo uses GitHub Actions instead.
+2. Note your **Account ID** (Workers & Pages overview, right column).
+3. Create an **API token**: **My Profile → API Tokens → Create Token** → use the **Edit Cloudflare Workers** template (includes Pages deploy). Or create a custom token with **Account → Cloudflare Pages → Edit**.
+4. In GitHub: **Settings → Secrets and variables → Actions** → add:
+   - `CLOUDFLARE_API_TOKEN` — token from step 3
+   - `CLOUDFLARE_ACCOUNT_ID` — account ID from step 2
+   - `VITE_GA_MEASUREMENT_ID_STAGING` *(optional)* — separate GA4 stream for staging; omit to keep analytics off on staging
+5. Create and push a `staging` branch (or merge into it). The workflow creates the Pages project `random-bible-verse-staging` on first deploy.
+
+Staging URL: `https://random-bible-verse-staging.pages.dev` (or add a custom domain under the Pages project, e.g. `staging.hidden.swlabs.cc`).
+
+To promote changes: merge `staging` → `main` (production deploys via the GitHub Pages workflow).
+
+Cloudflare serves `public/_headers` so `sw.js` is not cached aggressively—PWA updates should land faster than on GitHub Pages alone.
+
 ## Deploy to GitHub Pages
 
 1. In your GitHub repo go to **Settings → Pages**.

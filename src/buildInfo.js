@@ -5,10 +5,13 @@ export const commitCount =
 export const deployedAt =
   typeof __BUILD_DEPLOYED_AT__ !== 'undefined' ? __BUILD_DEPLOYED_AT__ : null
 
+/** `production` (default), `staging`, or unset for local dev. */
+export const deployEnv = import.meta.env.VITE_DEPLOY_ENV || ''
+
 export function formatBuildLabel() {
   const count = commitCount
   if (!deployedAt) {
-    return `v${count} · local`
+    return deployEnv ? `v${count} · local · ${deployEnv}` : `v${count} · local`
   }
   const when = new Intl.DateTimeFormat('en-GB', {
     day: 'numeric',
@@ -18,5 +21,6 @@ export function formatBuildLabel() {
     minute: '2-digit',
     timeZoneName: 'short',
   }).format(new Date(deployedAt))
-  return `v${count} · ${when}`
+  const envSuffix = deployEnv && deployEnv !== 'production' ? ` · ${deployEnv}` : ''
+  return `v${count} · ${when}${envSuffix}`
 }
