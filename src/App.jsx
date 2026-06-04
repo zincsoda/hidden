@@ -279,30 +279,26 @@ function App() {
     const charIndex = range.start + firstLetterCi
     const selected = selectedLetterIndices.has(charIndex)
     const firstLetter = chars[firstLetterCi]
-    const rest = chars.slice(firstLetterCi + 1).join('')
     return (
-      <>
-        <span
-          role="button"
-          tabIndex={0}
-          className={`verse-letter-btn${selected ? ' verse-letter-btn--selected' : ''}`}
-          onClick={(e) => {
-            e.stopPropagation()
-            toggleWordCue(wordIndex)
-          }}
-          onKeyDown={(e) => {
-            if (e.key !== 'Enter' && e.key !== ' ') return
-            e.preventDefault()
-            e.stopPropagation()
-            toggleWordCue(wordIndex)
-          }}
-          aria-pressed={selected}
-          aria-label={`${selected ? 'Remove' : 'Add'} letter cue ${firstLetter} for word ${word}`}
-        >
-          {firstLetter}
-        </span>
-        {rest ? <span>{rest}</span> : null}
-      </>
+      <span
+        role="button"
+        tabIndex={0}
+        className={`verse-letter-btn${selected ? ' verse-letter-btn--selected' : ''}`}
+        onClick={(e) => {
+          e.stopPropagation()
+          toggleWordCue(wordIndex)
+        }}
+        onKeyDown={(e) => {
+          if (e.key !== 'Enter' && e.key !== ' ') return
+          e.preventDefault()
+          e.stopPropagation()
+          toggleWordCue(wordIndex)
+        }}
+        aria-pressed={selected}
+        aria-label={`${selected ? 'Remove' : 'Add'} letter cue ${firstLetter} for word ${word}`}
+      >
+        {word}
+      </span>
     )
   }
 
