@@ -4,6 +4,9 @@ import {
   buildLetterCueLine,
   toggleLetterIndex,
   getWordCharRanges,
+  getFirstSelectableLetterIndex,
+  isWordCueSelected,
+  toggleWordCueIndex,
 } from './letterCue.js'
 
 describe('letterCue', () => {
@@ -33,5 +36,24 @@ describe('letterCue', () => {
       { start: 6, end: 10 },
       { start: 11, end: 16 },
     ])
+  })
+
+  it('finds the first selectable letter in a word range', () => {
+    const text = "'Alpha"
+    expect(getFirstSelectableLetterIndex(text, 0, 6)).toBe(1)
+    expect(getFirstSelectableLetterIndex(text, 0, 1)).toBe(null)
+  })
+
+  it('toggles word cues via each word first letter', () => {
+    const text = 'Alpha Beta'
+    const alphaRange = { start: 0, end: 5 }
+    const betaRange = { start: 6, end: 10 }
+    const afterAlpha = toggleWordCueIndex(new Set(), text, alphaRange)
+    expect(afterAlpha).toEqual(new Set([0]))
+    expect(isWordCueSelected(afterAlpha, text, alphaRange)).toBe(true)
+    expect(isWordCueSelected(afterAlpha, text, betaRange)).toBe(false)
+    const both = toggleWordCueIndex(afterAlpha, text, betaRange)
+    expect(buildLetterCueLine(text, both)).toBe('A B')
+    expect(toggleWordCueIndex(both, text, alphaRange)).toEqual(new Set([6]))
   })
 })

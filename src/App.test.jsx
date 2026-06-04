@@ -560,6 +560,69 @@ describe('App', () => {
     expect(screen.queryByRole('dialog', { name: /reading menu/i })).not.toBeInTheDocument()
   })
 
+  it('shows words or letters pick controls when letter cue mode is on', async () => {
+    const user = userEvent.setup()
+    await renderAppReady()
+
+    await user.click(screen.getByRole('blockquote'))
+    expect(screen.queryByRole('button', { name: /^words$/i })).not.toBeInTheDocument()
+
+    await user.click(screen.getByRole('switch', { name: /^letter cue method$/i }))
+    expect(screen.getByRole('button', { name: /^words$/i })).toHaveAttribute('aria-pressed', 'false')
+    expect(screen.getByRole('button', { name: /^letters$/i })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    )
+
+    await user.click(screen.getByRole('button', { name: /^words$/i }))
+    expect(screen.getByRole('button', { name: /^words$/i })).toHaveAttribute('aria-pressed', 'true')
+    expect(screen.getByRole('button', { name: /^letters$/i })).toHaveAttribute(
+      'aria-pressed',
+      'false',
+    )
+  })
+
+  it('in words mode only the first letter of each word is a cue control', async () => {
+    const user = userEvent.setup()
+    await renderAppReady()
+
+    await user.click(screen.getByRole('blockquote'))
+    await user.click(screen.getByRole('switch', { name: /^letter cue method$/i }))
+    await user.click(screen.getByRole('button', { name: /^words$/i }))
+    await user.click(screen.getByRole('button', { name: /hide reading menu/i }))
+
+    const blockquote = screen.getByRole('blockquote')
+    expect(within(blockquote).getByRole('button', { name: /add letter cue a for word alpha/i }))
+      .toBeInTheDocument()
+    expect(
+      within(blockquote).queryByRole('button', { name: 'Add letter cue l' }),
+    ).not.toBeInTheDocument()
+
+    await user.click(
+      within(blockquote).getByRole('button', { name: /add letter cue a for word alpha/i }),
+    )
+    await user.click(
+      within(blockquote).getByRole('button', { name: /add letter cue b for word beta/i }),
+    )
+    expect(screen.getByLabelText('Letter cues')).toHaveTextContent('A B')
+  })
+
+  it('clears letter cues when switching between words and letters pick modes', async () => {
+    const user = userEvent.setup()
+    await renderAppReady()
+
+    await enableLetterCueModeFromMenu(user)
+    await user.click(
+      within(screen.getByRole('blockquote')).getByRole('button', { name: 'Add letter cue A' }),
+    )
+    expect(screen.getByLabelText('Letter cues')).toHaveTextContent('A')
+
+    await user.click(screen.getByRole('blockquote'))
+    await user.click(screen.getByRole('button', { name: /^words$/i }))
+    await user.click(screen.getByRole('button', { name: /hide reading menu/i }))
+    expect(screen.queryByLabelText('Letter cues')).not.toBeInTheDocument()
+  })
+
   it('clears letter cues when the verse changes', async () => {
     vi.mocked(getRandomBuiltInVerse).mockReturnValue({
       reference: 'Test 2:2',
