@@ -32,6 +32,11 @@ import {
   toggleLetterIndex,
 } from './letterCue.js'
 import { trackEvent } from './analytics.js'
+import {
+  clearLocalAppData,
+  deleteAccount,
+  DELETE_ACCOUNT_WARNING,
+} from './accountApi.js'
 import './App.css'
 
 const WORD_SPLIT = /\s+/
@@ -81,6 +86,9 @@ function App() {
     readAppBackgroundIndex(),
   )
   const pickDialogRef = useRef(null)
+  const deleteAccountDialogRef = useRef(null)
+  const [deleteAccountBusy, setDeleteAccountBusy] = useState(false)
+  const [deleteAccountError, setDeleteAccountError] = useState('')
 
   const closeControlsOverlay = useCallback(() => {
     setControlsOverlayOpen(false)
@@ -129,6 +137,42 @@ function App() {
 
   const closePickVerse = () => {
     pickDialogRef.current?.close()
+  }
+
+  const openDeleteAccountDialog = () => {
+    closeControlsOverlay()
+    setDeleteAccountError('')
+    const d = deleteAccountDialogRef.current
+    if (!d) return
+    d.showModal()
+  }
+
+  const closeDeleteAccountDialog = () => {
+    if (deleteAccountBusy) return
+    deleteAccountDialogRef.current?.close()
+  }
+
+  const confirmDeleteAccount = async () => {
+    setDeleteAccountBusy(true)
+    setDeleteAccountError('')
+    try {
+      await deleteAccount()
+      clearLocalAppData()
+      trackEvent('account_deleted')
+      deleteAccountDialogRef.current?.close()
+      setMemoryVerses([])
+      setMemoryVersesError('')
+      setVerse(FALLBACK_DISPLAY_VERSE)
+      setAwaitingInitialMemoryVerse(false)
+      setVerseFontScaleIndexState(readVerseFontScaleIndex())
+      setAppBackgroundIndexState(readAppBackgroundIndex())
+      setControlsOverlayOpen(false)
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Could not delete account.'
+      setDeleteAccountError(message)
+    } finally {
+      setDeleteAccountBusy(false)
+    }
   }
 
   const selectVerseFromList = (picked) => {
@@ -422,6 +466,46 @@ function App() {
         </div>
       </dialog>
 
+      <dialog
+        ref={deleteAccountDialogRef}
+        className="pick-dialog delete-account-dialog"
+        aria-labelledby="delete-account-dialog-heading"
+        onClose={() => {
+          if (!deleteAccountBusy) setDeleteAccountError('')
+        }}
+      >
+        <div className="pick-form">
+          <h2 className="pick-dialog-title" id="delete-account-dialog-heading">
+            Delete account?
+          </h2>
+          <p className="pick-dialog-hint delete-account-warning">{DELETE_ACCOUNT_WARNING}</p>
+          {deleteAccountError ? (
+            <p className="pick-dialog-status pick-dialog-status-error" role="alert">
+              {deleteAccountError}
+            </p>
+          ) : null}
+          <div className="pick-dialog-actions delete-account-dialog-actions">
+            <button
+              type="button"
+              className="new-verse-btn pick-cancel"
+              disabled={deleteAccountBusy}
+              onClick={closeDeleteAccountDialog}
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              className="new-verse-btn delete-account-confirm-btn"
+              disabled={deleteAccountBusy}
+              aria-describedby="delete-account-dialog-heading"
+              onClick={() => void confirmDeleteAccount()}
+            >
+              {deleteAccountBusy ? 'Deleting…' : 'Delete my account'}
+            </button>
+          </div>
+        </div>
+      </dialog>
+
       <button
           type="button"
           className="controls-overlay-toggle"
@@ -643,6 +727,16 @@ function App() {
               ) : null}
             </>
           ) : null}
+          <button
+            type="button"
+            className="controls-overlay-delete-account-btn"
+            onClick={(e) => {
+              e.stopPropagation()
+              openDeleteAccountDialog()
+            }}
+          >
+            Delete account
+          </button>
           <p className="controls-overlay-dedication">Made with ❤️ for KSR</p>
           <p className="controls-overlay-build" aria-label="Build version">
             {formatBuildLabel()}
