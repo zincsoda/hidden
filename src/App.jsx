@@ -30,6 +30,7 @@ import {
   getWordCharRanges,
   isSelectableLetter,
   toggleLetterIndex,
+  toggleWordCueIndex,
 } from './letterCue.js'
 import { trackEvent } from './analytics.js'
 import './App.css'
@@ -76,6 +77,7 @@ function App() {
   const [hiddenWordIndices, setHiddenWordIndices] = useState(() => new Set())
   const [revealHiddenWords, setRevealHiddenWords] = useState(false)
   const [letterCueModeEnabled, setLetterCueModeEnabled] = useState(false)
+  const [letterCuePickMode, setLetterCuePickMode] = useState('letters')
   const [selectedLetterIndices, setSelectedLetterIndices] = useState(() => new Set())
   const [appBackgroundIndex, setAppBackgroundIndexState] = useState(() =>
     readAppBackgroundIndex(),
@@ -216,6 +218,24 @@ function App() {
     setSelectedLetterIndices((prev) => toggleLetterIndex(prev, charIndex))
   }, [])
 
+  const toggleWordCue = useCallback(
+    (wordIndex) => {
+      const range = wordCharRanges[wordIndex]
+      if (!range) return
+      setSelectedLetterIndices((prev) => toggleWordCueIndex(prev, verseText, range))
+    },
+    [verseText, wordCharRanges],
+  )
+
+  const selectLetterCuePickMode = useCallback((mode) => {
+    setLetterCuePickMode(mode)
+    setSelectedLetterIndices(new Set())
+    trackEvent('setting_change', {
+      setting: 'letter_cue_pick',
+      value: mode,
+    })
+  }, [])
+
   const hideMoreWords = useCallback(() => {
     trackEvent('memory_practice', { action: 'hide_words' })
     setHiddenWordIndices((prev) => {
@@ -248,6 +268,42 @@ function App() {
     if (!verse) return
     setControlsOverlayOpen(true)
     trackEvent('controls_open')
+  }
+
+  const renderWordFirstLetterCue = (word, wordIndex) => {
+    const range = wordCharRanges[wordIndex]
+    if (!range) return word
+    const chars = [...word]
+    const firstLetterCi = chars.findIndex((ch) => isSelectableLetter(ch))
+    if (firstLetterCi === -1) return word
+    const charIndex = range.start + firstLetterCi
+    const selected = selectedLetterIndices.has(charIndex)
+    const firstLetter = chars[firstLetterCi]
+    const rest = chars.slice(firstLetterCi + 1).join('')
+    return (
+      <>
+        <span
+          role="button"
+          tabIndex={0}
+          className={`verse-letter-btn${selected ? ' verse-letter-btn--selected' : ''}`}
+          onClick={(e) => {
+            e.stopPropagation()
+            toggleWordCue(wordIndex)
+          }}
+          onKeyDown={(e) => {
+            if (e.key !== 'Enter' && e.key !== ' ') return
+            e.preventDefault()
+            e.stopPropagation()
+            toggleWordCue(wordIndex)
+          }}
+          aria-pressed={selected}
+          aria-label={`${selected ? 'Remove' : 'Add'} letter cue ${firstLetter} for word ${word}`}
+        >
+          {firstLetter}
+        </span>
+        {rest ? <span>{rest}</span> : null}
+      </>
+    )
   }
 
   const renderWordLetters = (word, wordIndex) => {
@@ -285,8 +341,9 @@ function App() {
   }
 
   const renderWordContent = (word, wordIndex) => {
-    if (letterCueModeEnabled) return renderWordLetters(word, wordIndex)
-    return word
+    if (!letterCueModeEnabled) return word
+    if (letterCuePickMode === 'words') return renderWordFirstLetterCue(word, wordIndex)
+    return renderWordLetters(word, wordIndex)
   }
 
   const handleOverlayAnotherVerseClick = (e) => {
@@ -534,6 +591,41 @@ function App() {
                     <span className="ios-switch-thumb" aria-hidden="true" />
                   </button>
                 </div>
+                {letterCueModeEnabled ? (
+                  <div
+                    className="controls-overlay-setting-row"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <span
+                      className="controls-overlay-setting-label"
+                      id="letter-cue-pick-label"
+                    >
+                      Letter cue pick
+                    </span>
+                    <div
+                      className="letter-cue-pick-group"
+                      role="group"
+                      aria-labelledby="letter-cue-pick-label"
+                    >
+                      <button
+                        type="button"
+                        className={`letter-cue-pick-btn${letterCuePickMode === 'words' ? ' letter-cue-pick-btn--active' : ''}`}
+                        aria-pressed={letterCuePickMode === 'words'}
+                        onClick={() => selectLetterCuePickMode('words')}
+                      >
+                        Words
+                      </button>
+                      <button
+                        type="button"
+                        className={`letter-cue-pick-btn${letterCuePickMode === 'letters' ? ' letter-cue-pick-btn--active' : ''}`}
+                        aria-pressed={letterCuePickMode === 'letters'}
+                        onClick={() => selectLetterCuePickMode('letters')}
+                      >
+                        Letters
+                      </button>
+                    </div>
+                  </div>
+                ) : null}
                 <div
                   className="controls-overlay-setting-row"
                   onClick={(e) => e.stopPropagation()}
