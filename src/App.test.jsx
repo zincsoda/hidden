@@ -9,6 +9,7 @@ import App, {
 } from './App.jsx'
 import { OVERLAY_BACKDROP_OPTIONS, APP_BACKGROUND_STORAGE_KEY } from './overlayBackdrop.js'
 import { fetchMemoryVerses } from './memoryVersesApi'
+import { deleteAccount, DELETE_ACCOUNT_WARNING, clearLocalAppData } from './accountApi'
 import { LAST_DISPLAYED_VERSE_KEY } from './lastDisplayedVerse'
 import { pickRandomFromPool } from './memoryHelpers'
 import { isIosDevice } from './iosDevice.js'
@@ -38,6 +39,15 @@ vi.mock('./verses', () => ({
   })),
 }))
 
+vi.mock('./accountApi', async (importOriginal) => {
+  const actual = await importOriginal()
+  return {
+    ...actual,
+    deleteAccount: vi.fn(),
+    clearLocalAppData: vi.fn(actual.clearLocalAppData),
+  }
+})
+
 describe('App', () => {
   afterEach(() => {
     cleanup()
@@ -59,6 +69,7 @@ describe('App', () => {
       reference: 'Test 1:1',
       text: 'Alpha Beta Gamma',
     })
+    vi.mocked(deleteAccount).mockResolvedValue(undefined)
   })
 
   async function renderAppReady() {
@@ -601,5 +612,70 @@ describe('App', () => {
     )
     await user.click(screen.getByRole('button', { name: /^hide reading menu/i }))
     expect(screen.getByRole('button', { name: /hide 2/i })).toBeInTheDocument()
+  })
+
+  it('shows a delete account control in the reading menu that opens a warning dialog', async () => {
+    const user = userEvent.setup()
+    await renderAppReady()
+
+    await user.click(screen.getByRole('blockquote'))
+    const deleteBtn = screen.getByRole('button', { name: /^delete account$/i })
+    expect(deleteBtn).toBeInTheDocument()
+
+    await user.click(deleteBtn)
+    expect(screen.queryByRole('dialog', { name: /reading menu/i })).not.toBeInTheDocument()
+    const confirmDialog = screen.getByRole('dialog', { name: /delete account/i })
+    expect(confirmDialog).toBeInTheDocument()
+    expect(within(confirmDialog).getByText(DELETE_ACCOUNT_WARNING)).toBeInTheDocument()
+    expect(within(confirmDialog).getByRole('button', { name: /^cancel$/i })).toBeInTheDocument()
+    expect(
+      within(confirmDialog).getByRole('button', { name: /^delete my account$/i }),
+    ).toBeInTheDocument()
+  })
+
+  it('closes the delete account dialog without calling the API when cancelled', async () => {
+    const user = userEvent.setup()
+    await renderAppReady()
+
+    await user.click(screen.getByRole('blockquote'))
+    await user.click(screen.getByRole('button', { name: /^delete account$/i }))
+    await user.click(screen.getByRole('button', { name: /^cancel$/i }))
+
+    expect(screen.queryByRole('dialog', { name: /delete account/i })).not.toBeInTheDocument()
+    expect(deleteAccount).not.toHaveBeenCalled()
+  })
+
+  it('deletes the account, clears local data, and resets the verse when confirmed', async () => {
+    const user = userEvent.setup()
+    localStorage.setItem('verseFontScale', '4')
+    await renderAppReady()
+
+    await user.click(screen.getByRole('blockquote'))
+    await user.click(screen.getByRole('button', { name: /^delete account$/i }))
+    await user.click(screen.getByRole('button', { name: /^delete my account$/i }))
+
+    await waitFor(() => expect(deleteAccount).toHaveBeenCalledTimes(1))
+    expect(clearLocalAppData).toHaveBeenCalled()
+    expect(localStorage.getItem('verseFontScale')).toBeNull()
+    expect(screen.queryByRole('dialog', { name: /delete account/i })).not.toBeInTheDocument()
+    await waitFor(() => {
+      expect(screen.getByRole('blockquote')).toHaveTextContent(/hidden your word/i)
+    })
+  })
+
+  it('shows an error in the delete dialog when account deletion fails', async () => {
+    vi.mocked(deleteAccount).mockRejectedValueOnce(new Error('Could not delete account (503)'))
+    const user = userEvent.setup()
+    await renderAppReady()
+
+    await user.click(screen.getByRole('blockquote'))
+    await user.click(screen.getByRole('button', { name: /^delete account$/i }))
+    await user.click(screen.getByRole('button', { name: /^delete my account$/i }))
+
+    await waitFor(() => {
+      expect(screen.getByRole('alert')).toHaveTextContent(/Could not delete account \(503\)/)
+    })
+    expect(screen.getByRole('dialog', { name: /delete account/i })).toBeInTheDocument()
+    expect(localStorage.getItem(LAST_DISPLAYED_VERSE_KEY)).not.toBeNull()
   })
 })

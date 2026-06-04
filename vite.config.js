@@ -28,6 +28,11 @@ export default defineConfig({
         changeOrigin: true,
         rewrite: () => '/api/sheet/memory_verses/ksr/',
       },
+      '/api/account': {
+        target: 'https://5ecvq3d6ri.execute-api.eu-west-2.amazonaws.com',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/account/, '/api/sheet/account'),
+      },
     },
   },
   define: {
