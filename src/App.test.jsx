@@ -582,7 +582,7 @@ describe('App', () => {
     )
   })
 
-  it('in words mode only the first letter of each word is a cue control', async () => {
+  it('in words mode each word is one cue control using its first letter', async () => {
     const user = userEvent.setup()
     await renderAppReady()
 
@@ -592,19 +592,40 @@ describe('App', () => {
     await user.click(screen.getByRole('button', { name: /hide reading menu/i }))
 
     const blockquote = screen.getByRole('blockquote')
-    expect(within(blockquote).getByRole('button', { name: /add letter cue a for word alpha/i }))
-      .toBeInTheDocument()
+    const alphaBtn = within(blockquote).getByRole('button', {
+      name: /add letter cue a for word alpha/i,
+    })
+    expect(alphaBtn).toHaveTextContent('Alpha')
     expect(
       within(blockquote).queryByRole('button', { name: 'Add letter cue l' }),
     ).not.toBeInTheDocument()
 
-    await user.click(
-      within(blockquote).getByRole('button', { name: /add letter cue a for word alpha/i }),
-    )
+    await user.click(alphaBtn)
     await user.click(
       within(blockquote).getByRole('button', { name: /add letter cue b for word beta/i }),
     )
     expect(screen.getByLabelText('Letter cues')).toHaveTextContent('A B')
+  })
+
+  it('in words mode tapping anywhere on a word adds its first letter cue', async () => {
+    const user = userEvent.setup()
+    await renderAppReady()
+
+    await user.click(screen.getByRole('blockquote'))
+    await user.click(screen.getByRole('switch', { name: /^letter cue method$/i }))
+    await user.click(screen.getByRole('button', { name: /^words$/i }))
+    await user.click(screen.getByRole('button', { name: /hide reading menu/i }))
+
+    const blockquote = screen.getByRole('blockquote')
+    const betaBtn = within(blockquote).getByRole('button', {
+      name: /add letter cue b for word beta/i,
+    })
+    expect(betaBtn).toHaveTextContent('Beta')
+
+    // Click the trailing letters of the word, not the first letter alone.
+    await user.click(betaBtn)
+    expect(betaBtn).toHaveAttribute('aria-pressed', 'true')
+    expect(screen.getByLabelText('Letter cues')).toHaveTextContent('B')
   })
 
   it('clears letter cues when switching between words and letters pick modes', async () => {
