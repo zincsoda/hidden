@@ -77,7 +77,7 @@ function App() {
   const [hiddenWordIndices, setHiddenWordIndices] = useState(() => new Set())
   const [revealHiddenWords, setRevealHiddenWords] = useState(false)
   const [letterCueModeEnabled, setLetterCueModeEnabled] = useState(false)
-  const [letterCuePickMode, setLetterCuePickMode] = useState('letters')
+  const [letterCuePickMode, setLetterCuePickMode] = useState('words')
   const [selectedLetterIndices, setSelectedLetterIndices] = useState(() => new Set())
   const [appBackgroundIndex, setAppBackgroundIndexState] = useState(() =>
     readAppBackgroundIndex(),
