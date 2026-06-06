@@ -17,7 +17,7 @@ const buildInfo = {
 }
 
 // https://vite.dev/config/
-// Relative base works at site root (custom domain) and /repo-name/ (project Pages)
+// Relative base works at site root on Cloudflare Workers (custom domain)
 export default defineConfig({
   base: process.env.BASE_PATH || './',
   server: {

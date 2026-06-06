@@ -545,17 +545,21 @@ describe('App', () => {
     await enableLetterCueModeFromMenu(user)
 
     const blockquote = screen.getByRole('blockquote')
-    const alphaA = within(blockquote).getByRole('button', { name: 'Add letter cue A' })
+    const alphaA = within(blockquote).getByRole('button', {
+      name: /add letter cue a for word alpha/i,
+    })
     await user.click(alphaA)
     expect(alphaA).toHaveAttribute('aria-pressed', 'true')
 
-    const betaB = within(blockquote).getByRole('button', { name: 'Add letter cue B' })
+    const betaB = within(blockquote).getByRole('button', {
+      name: /add letter cue b for word beta/i,
+    })
     await user.click(betaB)
 
     expect(screen.getByLabelText('Letter cues')).toHaveTextContent('A B')
 
     await user.click(
-      within(blockquote).getByRole('button', { name: 'Remove letter cue A' }),
+      within(blockquote).getByRole('button', { name: /remove letter cue a for word alpha/i }),
     )
     expect(screen.getByLabelText('Letter cues')).toHaveTextContent('B')
   })
@@ -566,9 +570,106 @@ describe('App', () => {
 
     await enableLetterCueModeFromMenu(user)
     await user.click(
-      within(screen.getByRole('blockquote')).getByRole('button', { name: 'Add letter cue A' }),
+      within(screen.getByRole('blockquote')).getByRole('button', {
+        name: /add letter cue a for word alpha/i,
+      }),
     )
     expect(screen.queryByRole('dialog', { name: /reading menu/i })).not.toBeInTheDocument()
+  })
+
+  it('defaults letter cue pick mode to words when letter cue mode is on', async () => {
+    const user = userEvent.setup()
+    await renderAppReady()
+
+    await user.click(screen.getByRole('blockquote'))
+    expect(screen.queryByRole('button', { name: /^words$/i })).not.toBeInTheDocument()
+
+    await user.click(screen.getByRole('switch', { name: /^letter cue method$/i }))
+    expect(screen.getByRole('button', { name: /^words$/i })).toHaveAttribute('aria-pressed', 'true')
+    expect(screen.getByRole('button', { name: /^letters$/i })).toHaveAttribute(
+      'aria-pressed',
+      'false',
+    )
+  })
+
+  it('shows words or letters pick controls when letter cue mode is on', async () => {
+    const user = userEvent.setup()
+    await renderAppReady()
+
+    await user.click(screen.getByRole('blockquote'))
+    await user.click(screen.getByRole('switch', { name: /^letter cue method$/i }))
+
+    await user.click(screen.getByRole('button', { name: /^letters$/i }))
+    expect(screen.getByRole('button', { name: /^letters$/i })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    )
+    expect(screen.getByRole('button', { name: /^words$/i })).toHaveAttribute('aria-pressed', 'false')
+
+    await user.click(screen.getByRole('button', { name: /^words$/i }))
+    expect(screen.getByRole('button', { name: /^words$/i })).toHaveAttribute('aria-pressed', 'true')
+    expect(screen.getByRole('button', { name: /^letters$/i })).toHaveAttribute(
+      'aria-pressed',
+      'false',
+    )
+  })
+
+  it('in words mode each word is one cue control using its first letter', async () => {
+    const user = userEvent.setup()
+    await renderAppReady()
+
+    await enableLetterCueModeFromMenu(user)
+
+    const blockquote = screen.getByRole('blockquote')
+    const alphaBtn = within(blockquote).getByRole('button', {
+      name: /add letter cue a for word alpha/i,
+    })
+    expect(alphaBtn).toHaveTextContent('Alpha')
+    expect(
+      within(blockquote).queryByRole('button', { name: 'Add letter cue l' }),
+    ).not.toBeInTheDocument()
+
+    await user.click(alphaBtn)
+    await user.click(
+      within(blockquote).getByRole('button', { name: /add letter cue b for word beta/i }),
+    )
+    expect(screen.getByLabelText('Letter cues')).toHaveTextContent('A B')
+  })
+
+  it('in words mode tapping anywhere on a word adds its first letter cue', async () => {
+    const user = userEvent.setup()
+    await renderAppReady()
+
+    await enableLetterCueModeFromMenu(user)
+
+    const blockquote = screen.getByRole('blockquote')
+    const betaBtn = within(blockquote).getByRole('button', {
+      name: /add letter cue b for word beta/i,
+    })
+    expect(betaBtn).toHaveTextContent('Beta')
+
+    // Click the trailing letters of the word, not the first letter alone.
+    await user.click(betaBtn)
+    expect(betaBtn).toHaveAttribute('aria-pressed', 'true')
+    expect(screen.getByLabelText('Letter cues')).toHaveTextContent('B')
+  })
+
+  it('clears letter cues when switching between words and letters pick modes', async () => {
+    const user = userEvent.setup()
+    await renderAppReady()
+
+    await enableLetterCueModeFromMenu(user)
+    await user.click(
+      within(screen.getByRole('blockquote')).getByRole('button', {
+        name: /add letter cue a for word alpha/i,
+      }),
+    )
+    expect(screen.getByLabelText('Letter cues')).toHaveTextContent('A')
+
+    await user.click(screen.getByRole('blockquote'))
+    await user.click(screen.getByRole('button', { name: /^letters$/i }))
+    await user.click(screen.getByRole('button', { name: /hide reading menu/i }))
+    expect(screen.queryByLabelText('Letter cues')).not.toBeInTheDocument()
   })
 
   it('clears letter cues when the verse changes', async () => {
@@ -581,7 +682,9 @@ describe('App', () => {
 
     await enableLetterCueModeFromMenu(user)
     await user.click(
-      within(screen.getByRole('blockquote')).getByRole('button', { name: 'Add letter cue A' }),
+      within(screen.getByRole('blockquote')).getByRole('button', {
+        name: /add letter cue a for word alpha/i,
+      }),
     )
     expect(screen.getByLabelText('Letter cues')).toHaveTextContent('A')
 

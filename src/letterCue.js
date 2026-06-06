@@ -19,6 +19,25 @@ export function toggleLetterIndex(selectedIndices, index) {
   return next
 }
 
+/** Index of the first letter cue character in `text[start..end)`, or null if none. */
+export function getFirstSelectableLetterIndex(text, start, end) {
+  for (let i = start; i < end; i++) {
+    if (isSelectableLetter(text[i])) return i
+  }
+  return null
+}
+
+export function isWordCueSelected(selectedIndices, text, wordRange) {
+  const index = getFirstSelectableLetterIndex(text, wordRange.start, wordRange.end)
+  return index != null && selectedIndices.has(index)
+}
+
+export function toggleWordCueIndex(selectedIndices, text, wordRange) {
+  const index = getFirstSelectableLetterIndex(text, wordRange.start, wordRange.end)
+  if (index == null) return selectedIndices
+  return toggleLetterIndex(selectedIndices, index)
+}
+
 /** Character start/end (exclusive) for each whitespace-delimited word in `text`. */
 export function getWordCharRanges(text, words) {
   const ranges = []

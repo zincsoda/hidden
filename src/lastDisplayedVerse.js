@@ -1,4 +1,4 @@
-export const LAST_DISPLAYED_VERSE_KEY = 'random-bible-verse:lastDisplayedVerse'
+export const LAST_DISPLAYED_VERSE_KEY = 'hidden:lastDisplayedVerse'
 
 /** Used only when localStorage has no valid saved verse. */
 export const FALLBACK_DISPLAY_VERSE = {

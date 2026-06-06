@@ -727,6 +727,43 @@ a.new-verse-btn {
   user-select: none;
 }
 
+.letter-cue-pick-group {
+  display: flex;
+  flex-shrink: 0;
+  gap: 0.35rem;
+}
+
+.letter-cue-pick-btn {
+  padding: 0.4rem 0.75rem;
+  margin: 0;
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: #e8e6e3;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s, color 0.2s;
+  user-select: none;
+}
+
+.letter-cue-pick-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+.letter-cue-pick-btn:focus-visible {
+  outline: 2px solid rgba(251, 191, 36, 0.75);
+  outline-offset: 2px;
+}
+
+.letter-cue-pick-btn--active {
+  background: rgba(251, 191, 36, 0.22);
+  border-color: rgba(251, 191, 36, 0.55);
+  color: #fde68a;
+}
+
 /*
  * Compact iOS-style switch (track + sliding thumb).
  * Uses aria-checked from the switch role — keep in sync via React.
