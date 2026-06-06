@@ -36,10 +36,12 @@ Production on `main` deploys to [Cloudflare Workers Static Assets](https://devel
    - `CLOUDFLARE_ACCOUNT_ID`
    - `VITE_GA_MEASUREMENT_ID` (GA4; see below)
    - `VITE_GA_MEASUREMENT_ID_STAGING` *(optional)* — separate GA4 stream for staging
-4. **DNS** — on first deploy, Wrangler attaches `hidden.swlabs.cc` as a Worker custom domain. If the domain previously pointed at GitHub Pages, remove the old CNAME/A record first (see [Custom Domains](https://developers.cloudflare.com/workers/configuration/routing/custom-domains/)).
+4. **DNS (required for `hidden.swlabs.cc`)** — delete the existing **CNAME** for `hidden.swlabs.cc` → `zincsoda.github.io` in the Cloudflare DNS dashboard for `swlabs.cc`. That record blocks the Worker custom domain (409 conflict). After it is removed, add this to `wrangler.jsonc` and redeploy:
+   ```jsonc
+   "routes": [{ "pattern": "hidden.swlabs.cc", "custom_domain": true }]
+   ```
+   Until then, production is at `https://random-bible-verse.steven-walsh39.workers.dev`.
 5. **Disable GitHub Pages** (optional) — **Settings → Pages → Source: None**, so only Workers serves production.
-
-Live site: [https://hidden.swlabs.cc/](https://hidden.swlabs.cc/)
 
 If your default branch is not `main`, edit `.github/workflows/deploy.yml` and change `branches: [main]`.
 
