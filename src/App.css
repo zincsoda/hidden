@@ -435,56 +435,6 @@ a.new-verse-btn {
   text-align: center;
 }
 
-.delete-account-dialog-actions {
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.delete-account-warning {
-  color: rgba(252, 211, 177, 0.95);
-}
-
-.delete-account-confirm-btn {
-  border-color: rgba(248, 113, 113, 0.45);
-  background: rgba(127, 29, 29, 0.35);
-}
-
-.delete-account-confirm-btn:hover:not(:disabled) {
-  background: rgba(153, 27, 27, 0.5);
-  border-color: rgba(248, 113, 113, 0.65);
-}
-
-.controls-overlay-delete-account-btn {
-  flex-shrink: 0;
-  display: block;
-  margin: 0.15rem auto 0;
-  padding: 0.35rem 0.75rem;
-  font-family: inherit;
-  font-size: 0.72rem;
-  letter-spacing: 0.02em;
-  text-align: center;
-  color: rgba(252, 165, 165, 0.9);
-  font-style: normal;
-  font-weight: 500;
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  text-decoration: underline;
-  text-underline-offset: 0.15em;
-  box-sizing: border-box;
-  user-select: none;
-}
-
-.controls-overlay-delete-account-btn:hover {
-  color: rgba(254, 202, 202, 0.98);
-}
-
-.controls-overlay-delete-account-btn:focus-visible {
-  outline: 2px solid rgba(248, 113, 113, 0.55);
-  outline-offset: 2px;
-  border-radius: 4px;
-}
-
 .controls-overlay-about-btn {
   flex-shrink: 0;
   display: block;
