@@ -1,5 +1,5 @@
-# Staging deploy: push to `staging` or run manually. Requires Cloudflare Pages secrets (see README).
-name: Deploy staging to Cloudflare Pages
+# https://staging.hidden.swlabs.cc/
+name: Deploy staging to Cloudflare Workers
 
 on:
   push:
@@ -13,9 +13,6 @@ concurrency:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      deployments: write
     steps:
       - uses: actions/checkout@v4
         with:
@@ -24,7 +21,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
           cache: 'npm'
 
       - name: Install dependencies
@@ -34,20 +31,10 @@ jobs:
         run: npm run build
         env:
           VITE_DEPLOY_ENV: staging
-          # Optional: set VITE_GA_MEASUREMENT_ID_STAGING for a separate GA4 stream
           VITE_GA_MEASUREMENT_ID: ${{ secrets.VITE_GA_MEASUREMENT_ID_STAGING }}
 
-      - name: Deploy to Cloudflare Pages
-        uses: cloudflare/pages-action@v1
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          projectName: random-bible-verse-staging
-          directory: dist
-          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
-          branch: staging
-
-      - name: Ensure staging custom domain
+      - name: Deploy
+        run: npx wrangler deploy --env staging
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-        run: bash scripts/ensure-pages-domain.sh "${{ secrets.CLOUDFLARE_ACCOUNT_ID }}" random-bible-verse-staging staging.hidden.swlabs.cc
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}

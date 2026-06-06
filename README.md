@@ -40,7 +40,7 @@ Production on `main` deploys to [Cloudflare Workers Static Assets](https://devel
    ```jsonc
    "routes": [{ "pattern": "hidden.swlabs.cc", "custom_domain": true }]
    ```
-   Until then, production is at `https://random-bible-verse.steven-walsh39.workers.dev`.
+   Until then, production is at `https://hidden.<your-subdomain>.workers.dev` (see the Workers dashboard after deploy).
 5. **Disable GitHub Pages** (optional) — **Settings → Pages → Source: None**, so only Workers serves production.
 
 If your default branch is not `main`, edit `.github/workflows/deploy.yml` and change `branches: [main]`.
@@ -61,17 +61,21 @@ The app checks for a new service worker as soon as it opens, then every two minu
 
 `public/_headers` sets strict cache headers on `sw.js` and Workbox files so Cloudflare does not serve a stale service worker after a deploy.
 
-## Deploy staging to Cloudflare Pages
+## Deploy staging to Cloudflare Workers
 
-Staging deploys from the `staging` branch via `.github/workflows/deploy-staging.yml`.
+Staging on the `staging` branch deploys to a separate Worker (`hidden-staging`) via `.github/workflows/deploy-staging.yml`, using the `staging` environment in `wrangler.jsonc`.
 
-1. Create and push a `staging` branch (or merge into it). The workflow creates the Pages project `random-bible-verse-staging` on first deploy and attaches the custom domain.
+1. Create and push a `staging` branch (or merge into it). The workflow builds with `VITE_DEPLOY_ENV=staging` and runs `wrangler deploy --env staging`.
 2. Uses the same `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` secrets as production.
 
 **Staging URLs**
 
-- [https://staging.hidden.swlabs.cc/](https://staging.hidden.swlabs.cc/) — custom domain (auto-attached after each deploy)
-- [https://random-bible-verse-staging.pages.dev](https://random-bible-verse-staging.pages.dev) — default Pages hostname
+- [https://staging.hidden.swlabs.cc/](https://staging.hidden.swlabs.cc/) — custom domain (declared in `wrangler.jsonc`; add DNS in Cloudflare when ready)
+- `https://hidden-staging.<your-subdomain>.workers.dev` — default Workers hostname
+
+**DNS for `staging.hidden.swlabs.cc`:** In the Cloudflare DNS dashboard for `swlabs.cc`, add a record for `staging.hidden` (or `staging.hidden.swlabs.cc` depending on your zone layout) pointing at the Worker custom domain Cloudflare shows after the first deploy. Wrangler attaches the custom domain on deploy when the route is in config.
+
+Local deploy: `VITE_DEPLOY_ENV=staging npm run deploy:staging`. Preview: `VITE_DEPLOY_ENV=staging npm run preview:worker:staging`.
 
 To promote changes: merge `staging` → `main` (production deploys via the Workers workflow).
 

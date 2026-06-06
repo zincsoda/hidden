@@ -1,5 +1,5 @@
 {
-  "name": "random-bible-verse",
+  "name": "hidden",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -8,8 +8,10 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "preview:worker": "npm run build && wrangler dev",
-    "deploy": "npm run build && wrangler deploy",
+    "preview:worker": "npm run build && wrangler dev --env=\"\"",
+    "preview:worker:staging": "npm run build && wrangler dev --env staging",
+    "deploy": "npm run build && wrangler deploy --env=\"\"",
+    "deploy:staging": "npm run build && wrangler deploy --env staging",
     "test": "vitest run",
     "test:watch": "vitest"
   },
