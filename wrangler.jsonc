@@ -1,0 +1,15 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "random-bible-verse",
+  "compatibility_date": "2026-06-06",
+  "assets": {
+    "directory": "./dist",
+    "not_found_handling": "single-page-application"
+  },
+  "routes": [
+    {
+      "pattern": "hidden.swlabs.cc",
+      "custom_domain": true
+    }
+  ]
+}
